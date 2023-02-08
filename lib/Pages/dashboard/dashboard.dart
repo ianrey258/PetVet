@@ -282,7 +282,7 @@ class _DashboardState extends State<Dashboard> {
           )
         ),
         drawer: Drawer(
-          width: size.width*.6,
+          width: size.width*.7,
           backgroundColor: Color.fromRGBO(19,50,64,1),
           child: drawerContainer(),
         ),

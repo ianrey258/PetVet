@@ -142,116 +142,114 @@ class _RegisterState extends State<Register> {
         appBar: AppBar(
           elevation: 0,
         ),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 25),
-          child: SingleChildScrollView(
-            child: Container(
-              height: size.height*.90,
-              child: Column(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Center(
-                      child: Image.asset('assets/images/Logo.png',fit: BoxFit.contain),
-                    )
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Container(
-                      width: size.width,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        // ignore: prefer_const_literals_to_create_immutables
-                        children: [
-                          SizedBox(
-                            height: 35,
-                            child:Text(
-                              "Register Account",
-                              style: TextStyle(
-                                fontSize: 30
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 15,
-                            child:Text(
-                              "Full your details or continue",
-                              style: TextStyle(
-                                fontSize: 15
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 15,
-                            child: Text(
-                              "social media",
-                              style: TextStyle(
-                                fontSize: 15
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  ),
-                  Expanded(
-                    flex: 6,
-                    child: Form(
-                      key: _key,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          _textFormField("Username", 0, TextInputType.text),
-                          _textFormField("Full Name", 1, TextInputType.text),
-                          _textFormField("Email", 2, TextInputType.emailAddress),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 25),
-                            child: _textFormField("Password", 3, TextInputType.visiblePassword),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 5),
-                            child: loginTextButton(),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 30),
-                            child: Center(child: registerButton()),
-                          ),
-                        ],
-                      )
-                    )
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      // child: Text("By Continuing you agree to "),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text("By Continuing you agree to "),
-                          RichText(
-                            text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: "our "
-                                ),
-                                TextSpan(
-                                  text: "terms and conditions",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold 
-                                  ),
-                                  recognizer: TapGestureRecognizer()..onTap =() => {}
-                                )
-                              ]
-                            )
-                          ),
-                        ],
-                      ),
-                    )
-                  ),
-                ]
+        body: Container(
+          padding: EdgeInsets.only(left: 20,right: 20),
+          height: size.height*.90,
+          child: Column(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Center(
+                  child: Image.asset('assets/images/Logo.png',fit: BoxFit.contain),
+                )
               ),
-            ),
+              Expanded(
+                flex: 2,
+                child: Container(
+                  width: size.width,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    // ignore: prefer_const_literals_to_create_immutables
+                    children: [
+                      SizedBox(
+                        height: 35,
+                        child:Text(
+                          "Register Account",
+                          style: TextStyle(
+                            fontSize: 30
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 15,
+                        child:Text(
+                          "Full your details or continue",
+                          style: TextStyle(
+                            fontSize: 15
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 15,
+                        child: Text(
+                          "social media",
+                          style: TextStyle(
+                            fontSize: 15
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              ),
+              Expanded(
+                flex: 6,
+                child: Form(
+                  key: _key,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        _textFormField("Username", 0, TextInputType.text),
+                        _textFormField("Full Name", 1, TextInputType.text),
+                        _textFormField("Email", 2, TextInputType.emailAddress),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 25),
+                          child: _textFormField("Password", 3, TextInputType.visiblePassword),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 5),
+                          child: loginTextButton(),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 30),
+                          child: Center(child: registerButton()),
+                        ),
+                      ],
+                    ),
+                  )
+                )
+              ),
+              Expanded(
+                flex: 1,
+                child: Container(
+                  // child: Text("By Continuing you agree to "),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text("By Continuing you agree to "),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "our "
+                            ),
+                            TextSpan(
+                              text: "terms and conditions",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold 
+                              ),
+                              recognizer: TapGestureRecognizer()..onTap =() => {}
+                            )
+                          ]
+                        )
+                      ),
+                    ],
+                  ),
+                )
+              ),
+            ]
           ),
         ),
       ),

@@ -45,6 +45,12 @@ dependencies:
   rating_dialog: ^2.0.4
   flutter_map: ^3.1.0
   geolocator: ^9.0.2
+  # video_call_flutter: ^1.0.2
+  # camera_with_rtmp_null_safety: ^0.3.5
+  face_camera: ^0.0.6
+  filter_list: ^1.0.2
+  flutter_chip_tags: ^2.0.2
+  datetime_picker_formfield_new: ^2.0.0
 
 dev_dependencies:
   flutter_test:

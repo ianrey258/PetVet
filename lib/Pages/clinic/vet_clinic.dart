@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chip_tags/flutter_chip_tags.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:banner_carousel/banner_carousel.dart';
 import 'package:smooth_star_rating_null_safety/smooth_star_rating_null_safety.dart';
@@ -20,6 +21,7 @@ class _VetClinicState extends State<VetClinic> {
   List<TextEditingController> text = [];
   final _key = GlobalKey<FormState>();
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  List<String> _services = ['Surgical','Anesthesi','Laboratory','Dietary Counseling']; 
 
   @override
   initState() {
@@ -120,16 +122,18 @@ class _VetClinicState extends State<VetClinic> {
 
   Widget clinicDetails(clinicname,rating,distance){
     return SizedBox(
-      height: 100,
+      height: 200,
       width: double.infinity,
-      child: ListView(
+      child: Column(
         // ignore: prefer_const_literals_to_create_immutables
         children: [
           ListTile(
             title: Text(clinicname,style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.black),),
             trailing: Container(
               child: TextButton(
-                onPressed: (){}, 
+                onPressed: (){
+                  Navigator.pushNamed(context, '/message');
+                }, 
                 child: Text('Send Message',style: TextStyle(color: Colors.white),),
                 style: ButtonStyle(
                   padding: MaterialStateProperty.all(EdgeInsets.only()),
@@ -165,6 +169,20 @@ class _VetClinicState extends State<VetClinic> {
                   )
                 ],
               ),
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.all(10),
+            width: double.infinity,
+            child: Wrap(
+              children: _services.map((e)=>Padding(
+                padding:EdgeInsets.all(2.0),
+                child: FilterChip(
+                  backgroundColor: Colors.lightBlue,
+                  label: Text(e,style: TextStyle(color: Colors.white,fontSize: 10),),
+                  onSelected: (value){},
+                ) 
+              )).toList(),
             ),
           )
         ],
@@ -265,12 +283,13 @@ class _VetClinicState extends State<VetClinic> {
                 Divider(),
                 clinicAddress('Vamenta Carmen, Cagayan de Oro City'),
                 clinicRatingReviews(4.0),
+                SizedBox.square(dimension: 80,)
               ]),
             ),
           ],
         ),
         drawer: Drawer(
-          width: size.width*.6,
+          width: size.width*.7,
           backgroundColor: Color.fromRGBO(19,50,64,1),
           child: drawerContainer(),
         ),

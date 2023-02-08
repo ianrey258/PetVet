@@ -1,6 +1,8 @@
 import 'package:cherry_toast/cherry_toast.dart';
 import 'package:cherry_toast/resources/arrays.dart';
+import 'package:datetime_picker_formfield_new/datetime_picker_formfield_new.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SetAppointment extends StatefulWidget {
@@ -16,6 +18,7 @@ class _SetAppointmentState extends State<SetAppointment> {
   final _key = GlobalKey<FormState>();
   List<bool> _values = [false,false,false];
   String payment = ''; 
+  final datetime_format = DateFormat("yyyy-MM-dd HH:mm");
 
   @override
   initState() {
@@ -69,6 +72,40 @@ class _SetAppointmentState extends State<SetAppointment> {
           )
         ],
       ),
+    );
+  }
+
+  Widget getDateAppointment(){
+    return DateTimeField(
+      decoration: InputDecoration(
+        contentPadding: EdgeInsets.all(15),
+        fillColor: Color.fromRGBO(229,229,229,1),
+        filled: true,
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Color.fromRGBO(66,74,109, 1)),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none
+        ),
+        hintText: 'DateTime'
+      ),
+      format: datetime_format,
+      onShowPicker: (context, currentValue) async {
+        final date = await showDatePicker(
+            context: context,
+            firstDate: DateTime(1900),
+            initialDate: currentValue ?? DateTime.now(),
+            lastDate: DateTime(2100));
+        if (date != null) {
+          final time = await showTimePicker(context: context,initialTime:TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
+          );
+          return DateTimeField.combine(date, time);
+        } else {
+          return currentValue;
+        }
+      },
     );
   }
 
@@ -173,6 +210,7 @@ class _SetAppointmentState extends State<SetAppointment> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _textFormField("Reason", 0, TextInputType.multiline),
+          getDateAppointment(),
           const Padding(
             padding: EdgeInsets.only(top: 10),
             child: Text('My Pet List',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold)),
