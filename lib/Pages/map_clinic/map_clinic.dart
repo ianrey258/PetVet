@@ -7,13 +7,15 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:vetfindapp/Model/clinic.dart';
-import 'package:vetfindapp/Model/pet.dart';
+import 'package:vetfindapp/Model/clinicModel.dart';
+import 'package:vetfindapp/Model/petModel.dart';
 import 'package:vetfindapp/Services/geo_location.dart';
+import 'package:vetfindapp/Style/library_style_and_constant.dart';
 
 
 class MapClinic extends StatefulWidget {
-  const MapClinic({super.key});
+  final ClinicData? data;
+  const MapClinic({super.key,this.data});
 
   @override
   State<MapClinic> createState() => _MapClinicState();
@@ -26,12 +28,11 @@ class _MapClinicState extends State<MapClinic> {
   List<AnimalData>? selectedAnimalCategory = [];
   List<ClinicService>? selectedClinicServices = [];
   LatLng _currentlatlng = LatLng(0, 0);
+  ClinicData? clinic;
+  List<ClinicData> Clinics = ClinicData.getSampleData();
+  List<LatLng> _points = [];
   final _accessToken = "pk.eyJ1IjoiaWFucmV5MjU4IiwiYSI6ImNrYjI3eXF0cTA4bjgyd28yeGJta2dtNmQifQ.LtqueENclx7vVAp6IfEusA";
   final _typeMap = "mapbox.mapbox-streets-v8";
-  final List<Map> _sampleData = [
-                                  {"name":"PetVet","image":"assets/images/PetVet.png","lat":"8.4753081","lng":"124.6716228"},
-                                  {"name":"Cats And Dog","image":"assets/images/cats_and_dogs.png","lat":"8.483989","lng":"124.6599067"}
-                                ];
 
   @override
   initState() {
@@ -41,7 +42,15 @@ class _MapClinicState extends State<MapClinic> {
         text.add(TextEditingController());
       }
     });
-    getLocation();
+    Future.delayed(Duration(seconds: 1),()async {
+      if(ModalRoute.of(super.context)!.settings.arguments != null){
+        final data = ModalRoute.of(super.context)!.settings.arguments as ClinicData;
+        setState(() {
+          clinic = data;
+        });
+    }
+    clinic?.name != null ? getLocationStore() : getLocation();
+    });
   }
 
   Future getLocation({zoom: 18.0}) async {
@@ -51,23 +60,59 @@ class _MapClinicState extends State<MapClinic> {
       _mapController.move(_currentlatlng, zoom);
     });
   }
+  
+  Future getLocationStore({zoom: 15.0}) async {
+    Future.delayed(Duration(seconds: 1),()async {
+      Position position = await GeolocationModule.getPosition();
+      LatLng _storelatlng = LatLng(double.parse(clinic!.lat??"0"),double.parse(clinic!.lng??"0"));
+
+      setState(() {
+        _currentlatlng = LatLng(position.latitude, position.longitude);
+        _mapController.move(_storelatlng, zoom);
+        _points = [_currentlatlng,_storelatlng];
+      });
+    });
+  }
+
+  bool checkStoreOnFilter(ClinicData data,List<ClinicService> services){
+    bool hasService = false;
+    services?.forEach((service) { 
+      selectedClinicServices?.forEach((filter) { 
+        if(!hasService && service.name == filter.name){
+          hasService = !hasService;
+        }
+      });
+    });
+    LatLng _storelatlng = LatLng(double.parse(data!.lat??"0"),double.parse(data!.lng??"0"));
+    if(hasService) _mapController.move(_storelatlng, 14.5);
+    return hasService;
+  }
 
   List<Marker> generateStoreMarker(){
-    return _sampleData.map((data)=>
+    print(selectedClinicServices);
+    return Clinics!.map((ClinicData data)=>
+      !checkStoreOnFilter(data,data!.services!) && selectedClinicServices!.isNotEmpty
+      ? Marker(point: LatLng(0, 0), builder: (context)=>SizedBox.shrink())
+      : 
       Marker(
         height: 80,
         width: 80,
         rotate: true,
-        point: LatLng(double.parse(data['lat']),double.parse(data['lng'])), 
+        point: LatLng(double.parse(data.lat??"0"),double.parse(data.lng??"0")), 
         builder: (context) => Container(
-          margin: EdgeInsets.only(bottom: 20),
+          margin: EdgeInsets.only(bottom: 10),
           child: ListTile(
             title: Center(
-              child: Image.asset(data['image'],fit: BoxFit.contain),
+              child: Image.asset(data.img??"",fit: BoxFit.fill),
             ),
-            subtitle: Text(data['name'],textAlign: TextAlign.center,),
+            subtitle: Text(data.name??"",textAlign: TextAlign.center,),
             onTap: (){
-              Navigator.popAndPushNamed(context, '/vet_clinic');
+              // if(clinic?.name != null){
+              //   Navigator.pop(context);
+              //   Navigator.popAndPushNamed(context, '/vet_clinic',arguments: data);
+              // } else {
+              // }
+              Navigator.pushNamed(context, '/vet_clinic',arguments: data);
             },
           ),
         )
@@ -81,13 +126,13 @@ class _MapClinicState extends State<MapClinic> {
       child: TextField(
         controller: text[0],
         keyboardType: TextInputType.name,
-        style: TextStyle(fontSize: 20, color: Color.fromRGBO(66,74,109, 1)),
+        style: TextStyle(fontSize: 20, color: secondaryColor),
         decoration: InputDecoration(
           contentPadding: EdgeInsets.all(15),
-          fillColor: Color.fromRGBO(229,229,229,1),
+          fillColor: text3Color,
           filled: true,
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Color.fromRGBO(66,74,109, 1)),
+            borderSide: BorderSide(color: secondaryColor),
             borderRadius: BorderRadius.circular(5),
           ),
           border: OutlineInputBorder(
@@ -104,10 +149,10 @@ class _MapClinicState extends State<MapClinic> {
     return FilterListWidget(
       themeData: FilterListThemeData(
         context,
-        backgroundColor: Color.fromRGBO(66,74,109, 1),
+        backgroundColor: secondaryColor,
         controlButtonBarTheme: ControlButtonBarThemeData(
           context,
-          backgroundColor: Colors.transparent
+          backgroundColor: text0Color
           )
       ),
       hideHeader: true,
@@ -143,10 +188,10 @@ class _MapClinicState extends State<MapClinic> {
     return FilterListWidget(
       themeData: FilterListThemeData(
         context,
-        backgroundColor: Color.fromRGBO(66,74,109, 1),
+        backgroundColor: secondaryColor,
         controlButtonBarTheme: ControlButtonBarThemeData(
           context,
-          backgroundColor: Colors.transparent
+          backgroundColor: text0Color
           )
       ),
       hideHeader: true,
@@ -166,9 +211,10 @@ class _MapClinicState extends State<MapClinic> {
       },
       applyButtonText: 'Apply and Search',
       onApplyButtonClick: (list){
+        _points = [];
         selectedClinicServices = list;
         Navigator.pop(context);
-        getLocation(zoom: 14.5);
+        // getLocation(zoom: 14.5);
         CherryToast.info(
           title: Text('Searching ...',textAlign: TextAlign.center,),
           animationDuration: Duration(milliseconds: 400),
@@ -181,8 +227,6 @@ class _MapClinicState extends State<MapClinic> {
   }
 
   Widget drawerContainer(){
-    selectedAnimalCategory = [];
-    selectedClinicServices = [];
     return ListView(
       children: [        
         SizedBox(
@@ -234,14 +278,16 @@ class _MapClinicState extends State<MapClinic> {
     return SafeArea(
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: Colors.white,
+        backgroundColor: text1Color,
         appBar: AppBar(
           elevation: 0,
           centerTitle: true,
-          title: Image.asset('assets/images/Logo.png',fit: BoxFit.contain),
+          title: Image.asset(logoImg,fit: BoxFit.contain),
           actions: [
             IconButton(
               onPressed: (){
+                selectedAnimalCategory = [];
+                selectedClinicServices = [];
                 _scaffoldKey.currentState?.openEndDrawer();
               }, 
               icon: FaIcon(Icons.filter_list_rounded)
@@ -263,6 +309,17 @@ class _MapClinicState extends State<MapClinic> {
                 'id': _typeMap
               },
             ),
+            PolylineLayer(
+              polylines: [
+                Polyline(
+                  useStrokeWidthInMeter: false,
+                  isDotted: true,
+                  points: _points,
+                  strokeWidth: 4,
+                  color: text8Color
+                ),
+              ],
+            ),
             MarkerLayer(
               markers: [
                 Marker(
@@ -278,15 +335,15 @@ class _MapClinicState extends State<MapClinic> {
                     ),
                   ),
                   rotate: true
-                )
+                ),
               ] + generateStoreMarker(),
             ),
           ],
         ),
         endDrawer: Drawer(
           width: size.width*.7,
-          // backgroundColor: Color.fromRGBO(19,50,64,1),
-          backgroundColor:  Color.fromRGBO(66,74,109, 1),
+          // backgroundColor: alternativeColor,
+          backgroundColor:  secondaryColor,
           child: drawerContainer(),
         ),
         floatingActionButton: FloatingActionButton(

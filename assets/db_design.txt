@@ -1,0 +1,46 @@
+User:
+- email
+- password
+- fullname
+- address
+- birthdate
+- profile_img
+- auth_key
+- _pet_list:Pets
+- _user_appointment_list:User_Appointment
+
+User_Appointment:
+- clinic_id
+
+Pets:
+- pet_name
+- pet_type
+- pet_img
+
+Clinic:
+- clinic_name
+- clinic_doctor
+- clinic_address
+- clinic_img
+- clinic_img_banner
+- clinic_lat
+- clinic_long
+- clinic_rating
+- services
+- _clinic_appointment_list:Clinic_Apointment
+- _review_list:Reviews
+
+Clinic_Apointment:
+- schedule_datetime
+- datetime_created
+- reason
+- payment
+- status
+- pet_owner
+- _pet_list:Pets
+
+Reviews:
+- user_name
+- email
+- comment
+- rate

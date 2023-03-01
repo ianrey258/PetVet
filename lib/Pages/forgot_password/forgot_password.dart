@@ -3,6 +3,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:vetfindapp/Controller/UserController.dart';
+import 'package:vetfindapp/Style/library_style_and_constant.dart';
 
 class ForgotPassword extends StatefulWidget {
   const ForgotPassword({super.key});
@@ -26,7 +28,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     });
   }
 
-  validation() async {
+  Future<bool> validation() async {
     if (_key.currentState!.validate()) {
       _key.currentState!.save();
       // LoadingScreen1.showLoadingNoMsg(context);
@@ -36,8 +38,13 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       // } catch (e) {
       //   return false;
       // }
+      return true;
     }
     return false;
+  }
+  
+  afterValidation() async {
+    await UserController.sendResetPassword(text[0].text.toString());
   }
 
   Widget _textFormField(String name, int controller, TextInputType type) {
@@ -47,7 +54,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         : IconButton(
             icon: FaIcon(
               FontAwesomeIcons.eyeSlash,
-              color: Color.fromRGBO(66,74,109, 1),
+              color: secondaryColor,
             ),
             onPressed: () {
               setState(() {
@@ -56,6 +63,12 @@ class _ForgotPasswordState extends State<ForgotPassword> {
             },
           );
 
+    var validateFunc = (val) => val!.isNotEmpty ? null : "Invalid " + name;
+    if(name == "Email"){
+      RegExp checker = new RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$");
+      validateFunc = (val) => val!.isNotEmpty && checker.hasMatch(val) ? null : "Invalid " + name;
+    }
+
     return Container(
       child: Column(
         children: [
@@ -63,7 +76,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
             alignment: Alignment.centerLeft,
             child: Text(
               name,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: text1Color),
               textAlign: TextAlign.left,
             ),
           ),
@@ -73,16 +86,16 @@ class _ForgotPasswordState extends State<ForgotPassword> {
               obscureText: obscures,
               keyboardType: type,
               controller: text[controller],
-              style: TextStyle(fontSize: 18, color: Color.fromRGBO(66,74,109, 1)),
-              cursorColor: Color.fromRGBO(66,74,109, 1),
+              style: TextStyle(fontSize: 18, color: secondaryColor),
+              cursorColor: secondaryColor,
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.all(15),
-                fillColor: Color.fromRGBO(229,229,229,1),
+                fillColor: text3Color,
                 filled: true,
                 // labelText: name,
                 suffixIcon: showPassword,
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color.fromRGBO(66,74,109, 1)),
+                  borderSide: BorderSide(color: secondaryColor),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 border: OutlineInputBorder(
@@ -90,7 +103,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   borderSide: BorderSide.none
                 ),
               ),
-              validator: (val) => val!.isNotEmpty ? null : "Invalid " + name,
+              validator: validateFunc,
             ),
           )
         ],
@@ -100,19 +113,17 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 
   Widget resetButton(){
     return TextButton.icon(
-      icon: FaIcon(FontAwesomeIcons.arrowRight,color: Colors.white, size: 30,),
-      label: Text(""),
-      style: ButtonStyle(
-        padding: MaterialStateProperty.all(EdgeInsets.only(left: 8)),
-        fixedSize: MaterialStateProperty.all(Size(30, 50)),
-        backgroundColor: MaterialStateProperty.all(Color.fromRGBO(0,207,253,1)),
-        shape: MaterialStateProperty.all(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10)
-          )
-        )
+      icon: Padding(
+        padding: EdgeInsets.only(left: 8),
+        child: FaIcon(FontAwesomeIcons.arrowRight,color: text1Color, size: 30,),
       ),
-      onPressed: (){
+      label: Text(""),
+      style: buttonStyleA(30, 50, 10, primaryColor),
+      onPressed: () async {
+        if(! await validation()){
+          return null;
+        }
+         await afterValidation();
         Navigator.pushNamed(context, '/reset_password');
       },
     );
@@ -123,7 +134,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       text:TextSpan(
         text: "Already have an Account!",
         style: TextStyle(
-          color: Color.fromRGBO(0,207,253,1)
+          color: primaryColor
         ),
         recognizer: TapGestureRecognizer()..onTap =() => Navigator.popAndPushNamed(context, '/login')
       )
@@ -149,7 +160,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   Expanded(
                     flex: 2,
                     child: Center(
-                      child: Image.asset('assets/images/Logo.png',fit: BoxFit.contain),
+                      child: Image.asset(logoImg,fit: BoxFit.contain),
                     )
                   ),
                   Expanded(
@@ -199,7 +210,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          _textFormField("Email", 0, TextInputType.text),
+                          _textFormField("Email", 0, TextInputType.emailAddress),
                           Padding(
                             padding: const EdgeInsets.only(top: 5),
                             child: loginTextButton(),

@@ -4,6 +4,8 @@ import 'package:datetime_picker_formfield_new/datetime_picker_formfield_new.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:vetfindapp/Style/library_style_and_constant.dart';
+
 
 class SetAppointment extends StatefulWidget {
   const SetAppointment({Key? key}) : super(key: key);
@@ -40,7 +42,7 @@ class _SetAppointmentState extends State<SetAppointment> {
             alignment: Alignment.centerLeft,
             child: Text(
               name,
-              style: TextStyle(color: Colors.black),
+              style: TextStyle(color: text2Color),
               textAlign: TextAlign.left,
             ),
           ),
@@ -52,14 +54,14 @@ class _SetAppointmentState extends State<SetAppointment> {
               minLines: TextInputType.multiline == type ? 4 : null,
               expands: false,
               controller: text[controller],
-              style: TextStyle(fontSize: 18, color: Color.fromRGBO(66,74,109, 1)),
-              cursorColor: Color.fromRGBO(66,74,109, 1),
+              style: TextStyle(fontSize: 18, color: secondaryColor),
+              cursorColor: secondaryColor,
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.all(15),
-                fillColor: Color.fromRGBO(229,229,229,1),
+                fillColor: text3Color,
                 filled: true,
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color.fromRGBO(66,74,109, 1)),
+                  borderSide: BorderSide(color: secondaryColor),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 border: OutlineInputBorder(
@@ -79,10 +81,10 @@ class _SetAppointmentState extends State<SetAppointment> {
     return DateTimeField(
       decoration: InputDecoration(
         contentPadding: EdgeInsets.all(15),
-        fillColor: Color.fromRGBO(229,229,229,1),
+        fillColor: text3Color,
         filled: true,
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Color.fromRGBO(66,74,109, 1)),
+          borderSide: BorderSide(color: secondaryColor),
           borderRadius: BorderRadius.circular(10),
         ),
         border: OutlineInputBorder(
@@ -117,7 +119,7 @@ class _SetAppointmentState extends State<SetAppointment> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10)
         ),
-        color: Colors.white70,
+        color: text1Color,
         margin: EdgeInsets.all(1),
         child: ListTile(
           leading: Container(
@@ -127,7 +129,7 @@ class _SetAppointmentState extends State<SetAppointment> {
             ),
             child: Image.asset(image,height: double.infinity,width: 50)
           ),
-          title: Text(title,style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.black),),
+          title: Text(title,style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: text2Color),),
           trailing: Container(
             width: 50,
             height: double.infinity,
@@ -177,7 +179,7 @@ class _SetAppointmentState extends State<SetAppointment> {
         children: [
           RadioListTile(
             contentPadding: EdgeInsets.all(0),
-            title: Text('Gcash',style: TextStyle(color: Colors.black),),
+            title: Text('Gcash',style: TextStyle(color: text2Color),),
             value: 'Gcash', 
             groupValue: payment, 
             onChanged: (value){
@@ -188,7 +190,7 @@ class _SetAppointmentState extends State<SetAppointment> {
           ),
           RadioListTile(
             contentPadding: EdgeInsets.all(0),
-            title: Text('Payment on Clinic',style: TextStyle(color: Colors.black),),
+            title: Text('Payment on Clinic',style: TextStyle(color: text2Color),),
             value: 'Payment on Clinic', 
             groupValue: payment, 
             onChanged: (value){
@@ -235,7 +237,7 @@ class _SetAppointmentState extends State<SetAppointment> {
     var size = MediaQuery.of(context).size;
 
     return AlertDialog(
-      title: const Text('Set Appointment',style: TextStyle(fontSize: 20,color: Colors.black),),
+      title: Text('Set Appointment',style: TextStyle(fontSize: 20,color: text2Color),),
       content: Container(
         height: size.height*.45,
         child: SizedBox(
@@ -251,17 +253,8 @@ class _SetAppointmentState extends State<SetAppointment> {
           onPressed: (){
             Navigator.pop(context);
           }, 
-          child: Text('Cancel',style: TextStyle(color: Colors.white),),
-          style: ButtonStyle(
-            padding: MaterialStateProperty.all(EdgeInsets.only()),
-            fixedSize: MaterialStateProperty.all(Size(80, 30)),
-            backgroundColor: MaterialStateProperty.all(Colors.red),
-            shape: MaterialStateProperty.all(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25)
-              )
-            )
-          ),
+          child: Text('Cancel',style: TextStyle(color: text1Color),),
+          style:  buttonStyleA(80,30,25,text4Color)
         ),
         TextButton(
           onPressed: (){
@@ -273,17 +266,8 @@ class _SetAppointmentState extends State<SetAppointment> {
               animationType: AnimationType.fromRight,
             ).show(context);
           }, 
-          child: Text('Set',style: TextStyle(color: Colors.white),),
-          style: ButtonStyle(
-            padding: MaterialStateProperty.all(EdgeInsets.only()),
-            fixedSize: MaterialStateProperty.all(Size(80, 30)),
-            backgroundColor: MaterialStateProperty.all(Colors.blue),
-            shape: MaterialStateProperty.all(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25)
-              )
-            )
-          ),
+          child: Text('Set',style: TextStyle(color: text1Color),),
+          style: buttonStyleA(80, 30, 25, primaryColor)
         )
       ],
     );

@@ -3,6 +3,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:vetfindapp/Style/library_style_and_constant.dart';
 
 class ResetPassword extends StatefulWidget {
   const ResetPassword({super.key});
@@ -47,7 +48,7 @@ class _ResetPasswordState extends State<ResetPassword> {
         : IconButton(
             icon: FaIcon(
               FontAwesomeIcons.eyeSlash,
-              color: Color.fromRGBO(66,74,109, 1),
+              color: secondaryColor,
             ),
             onPressed: () {
               setState(() {
@@ -63,7 +64,7 @@ class _ResetPasswordState extends State<ResetPassword> {
             alignment: Alignment.centerLeft,
             child: Text(
               name,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: text1Color),
               textAlign: TextAlign.left,
             ),
           ),
@@ -73,16 +74,16 @@ class _ResetPasswordState extends State<ResetPassword> {
               obscureText: obscures,
               keyboardType: type,
               controller: text[controller],
-              style: TextStyle(fontSize: 18, color: Color.fromRGBO(66,74,109, 1)),
-              cursorColor: Color.fromRGBO(66,74,109, 1),
+              style: TextStyle(fontSize: 18, color: secondaryColor),
+              cursorColor: secondaryColor,
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.all(15),
-                fillColor: Color.fromRGBO(229,229,229,1),
+                fillColor: text3Color,
                 filled: true,
                 // labelText: name,
                 suffixIcon: showPassword,
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color.fromRGBO(66,74,109, 1)),
+                  borderSide: BorderSide(color: secondaryColor),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 border: OutlineInputBorder(
@@ -100,18 +101,12 @@ class _ResetPasswordState extends State<ResetPassword> {
 
   Widget resetButton(){
     return TextButton.icon(
-      icon: FaIcon(FontAwesomeIcons.arrowRight,color: Colors.white, size: 30,),
-      label: Text(""),
-      style: ButtonStyle(
-        padding: MaterialStateProperty.all(EdgeInsets.only(left: 8)),
-        fixedSize: MaterialStateProperty.all(Size(30, 50)),
-        backgroundColor: MaterialStateProperty.all(Color.fromRGBO(0,207,253,1)),
-        shape: MaterialStateProperty.all(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10)
-          )
-        )
+      icon: Padding(
+        padding: EdgeInsets.only(left: 8),
+        child: FaIcon(FontAwesomeIcons.arrowRight,color: text1Color, size: 30,),
       ),
+      label: Text(""),
+      style: buttonStyleA(30, 50, 10, primaryColor),
       onPressed: (){
         Navigator.pop(context);
         Navigator.popAndPushNamed(context,'/login');
@@ -119,15 +114,31 @@ class _ResetPasswordState extends State<ResetPassword> {
     );
   }
 
+  // Widget loginTextButton(){
+  //   return RichText(
+  //     text:TextSpan(
+  //       text: "Already have an Account!",
+  //       style: TextStyle(
+  //         color: primaryColor
+  //       ),
+  //       recognizer: TapGestureRecognizer()..onTap =() => Navigator.popAndPushNamed(context, '/login')
+  //     )
+  //   );
+  // }
+  
   Widget loginTextButton(){
-    return RichText(
-      text:TextSpan(
-        text: "Already have an Account!",
-        style: TextStyle(
-          color: Color.fromRGBO(0,207,253,1)
-        ),
-        recognizer: TapGestureRecognizer()..onTap =() => Navigator.popAndPushNamed(context, '/login')
-      )
+    return FilledButton(
+      onPressed: (){
+        Navigator.pop(context);
+        Navigator.pop(context);
+        // Navigator.popAndPushNamed(context, '/login');
+      }, 
+      child: Text("Login",
+          style: TextStyle(
+            // color: primaryColor
+            fontSize: 18
+          ),
+      ),
     );
   }
 
@@ -150,61 +161,81 @@ class _ResetPasswordState extends State<ResetPassword> {
                   Expanded(
                     flex: 2,
                     child: Center(
-                      child: Image.asset('assets/images/Logo.png',fit: BoxFit.contain),
+                      child: Image.asset(logoImg,fit: BoxFit.contain),
                     )
                   ),
                   Expanded(
                     flex: 2,
-                    child: Container(
-                      width: size.width,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        // ignore: prefer_const_literals_to_create_immutables
-                        children: [
-                          SizedBox(
-                            height: 35,
-                            child:Text(
-                              "Set a Password",
-                              style: TextStyle(
-                                fontSize: 30
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 15,
-                            child:Text(
-                              "Enter your new password",
-                              style: TextStyle(
-                                fontSize: 15
-                              ),
-                            ),
-                          ),
-                        ],
+                    child: Center(
+                      child: Text("Check your Email to Reset your Password.",
+                        style: TextStyle(fontSize: 18),
+                        textAlign: TextAlign.center,
                       ),
                     )
                   ),
                   Expanded(
-                    flex: 6,
-                    child: Form(
-                      key: _key,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          _textFormField("Password", 0, TextInputType.visiblePassword),
-                          _textFormField("Re-type Password", 1, TextInputType.visiblePassword),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 5),
-                            child: loginTextButton(),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 30),
-                            child: Center(child: resetButton()),
-                          ),
-                        ],
-                      )
+                    flex: 2,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 5),
+                        child: loginTextButton(),
+                      ),
                     )
-                  ),
+                  )
+
+
+                  // Expanded(
+                  //   flex: 2,
+                  //   child: Container(
+                  //     width: size.width,
+                  //     child: Column(
+                  //       crossAxisAlignment: CrossAxisAlignment.start,
+                  //       // ignore: prefer_const_literals_to_create_immutables
+                  //       children: [
+                  //         SizedBox(
+                  //           height: 35,
+                  //           child:Text(
+                  //             "Set a Password",
+                  //             style: TextStyle(
+                  //               fontSize: 30
+                  //             ),
+                  //           ),
+                  //         ),
+                  //         SizedBox(
+                  //           height: 15,
+                  //           child:Text(
+                  //             "Enter your new password",
+                  //             style: TextStyle(
+                  //               fontSize: 15
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   )
+                  // ),
+                  // Expanded(
+                  //   flex: 6,
+                  //   child: Form(
+                  //     key: _key,
+                  //     child: Column(
+                  //       crossAxisAlignment: CrossAxisAlignment.start,
+                  //       mainAxisAlignment: MainAxisAlignment.start,
+                  //       children: [
+                  //         _textFormField("Password", 0, TextInputType.visiblePassword),
+                  //         _textFormField("Re-type Password", 1, TextInputType.visiblePassword),
+                  //         Padding(
+                  //           padding: const EdgeInsets.only(top: 5),
+                  //           child: loginTextButton(),
+                  //         ),
+                  //         Padding(
+                  //           padding: const EdgeInsets.only(top: 30),
+                  //           child: Center(child: resetButton()),
+                  //         ),
+                  //       ],
+                  //     )
+                  //   )
+                  // ),
                 ]
               ),
             ),

@@ -42,7 +42,7 @@ class _VideoCallState extends State<VideoCall> {
     
     // return SafeArea(
     //   child: Scaffold(
-    //     backgroundColor: Colors.white,
+    //     backgroundColor: text1Color,
     //     appBar: AppBar(
     //       elevation: 0,
     //       centerTitle: true,
@@ -56,7 +56,7 @@ class _VideoCallState extends State<VideoCall> {
     //     ),
     //     body: Container(
     //       decoration: BoxDecoration(
-    //         color: Colors.black
+    //         color: text2Color
     //       ),
     //       child: Center(
     //         child: Camera(),

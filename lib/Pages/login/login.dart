@@ -1,8 +1,16 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'dart:convert';
+
+import 'package:cherry_toast/cherry_toast.dart';
+import 'package:cherry_toast/resources/arrays.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:vetfindapp/Controller/UserController.dart';
+import 'package:vetfindapp/Pages/LoadingScreen/LoadingScreen.dart';
+import 'package:vetfindapp/Style/library_style_and_constant.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -29,13 +37,13 @@ class _LoginState extends State<Login> {
   validation() async {
     if (_key.currentState!.validate()) {
       _key.currentState!.save();
-      // LoadingScreen1.showLoadingNoMsg(context);
-      // try {
-      //   var result = await FirebaseController.loginUser(text);
-      //   return result;
-      // } catch (e) {
-      //   return false;
-      // }
+      LoadingScreen1.showLoadingNoMsg(context);
+      try {
+        var result = await UserController.loginUser(text);
+        return result;
+      } catch (e) {
+        return false;
+      }
     }
     return false;
   }
@@ -47,7 +55,7 @@ class _LoginState extends State<Login> {
         : IconButton(
             icon: FaIcon(
               FontAwesomeIcons.eyeSlash,
-              color: Color.fromRGBO(66,74,109, 1),
+              color: secondaryColor,
             ),
             onPressed: () {
               setState(() {
@@ -63,7 +71,7 @@ class _LoginState extends State<Login> {
             alignment: Alignment.centerLeft,
             child: Text(
               name,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: text1Color),
               textAlign: TextAlign.left,
             ),
           ),
@@ -73,16 +81,16 @@ class _LoginState extends State<Login> {
               obscureText: obscures,
               keyboardType: type,
               controller: text[controller],
-              style: TextStyle(fontSize: 18, color: Color.fromRGBO(66,74,109, 1)),
-              cursorColor: Color.fromRGBO(66,74,109, 1),
+              style: TextStyle(fontSize: 18, color: secondaryColor),
+              cursorColor: secondaryColor,
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.all(15),
-                fillColor: Color.fromRGBO(229,229,229,1),
+                fillColor: text3Color,
                 filled: true,
                 // labelText: name,
                 suffixIcon: showPassword,
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color.fromRGBO(66,74,109, 1)),
+                  borderSide: BorderSide(color: secondaryColor),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 border: OutlineInputBorder(
@@ -100,21 +108,23 @@ class _LoginState extends State<Login> {
 
   Widget loginButton(){
     return TextButton.icon(
-      onPressed: (){
-        Navigator.popAndPushNamed(context, '/dashboard');
+      onPressed: () async {
+        if(_key.currentState!.validate()){
+          if(await validation()){
+            Navigator.pop(context);
+            Navigator.popAndPushNamed(context, '/dashboard');
+          }else{
+            Navigator.pop(context);
+            CherryToast.error(title: Text("Check Username/Password!", style: TextStyle(fontSize: 12),),).show(context);
+          }
+        }
       },
-      icon: FaIcon(FontAwesomeIcons.arrowRight,color: Colors.white, size: 30,),
-      label: Text(""),
-      style: ButtonStyle(
-        padding: MaterialStateProperty.all(EdgeInsets.only(left: 8)),
-        fixedSize: MaterialStateProperty.all(Size(30, 50)),
-        backgroundColor: MaterialStateProperty.all(Color.fromRGBO(0,207,253,1)),
-        shape: MaterialStateProperty.all(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10)
-          )
-        )
+      icon: Padding(
+        padding: EdgeInsets.only(left: 8),
+        child: FaIcon(FontAwesomeIcons.arrowRight,color: text1Color, size: 30,),
       ),
+      label: Text(""),
+      style: buttonStyleA(30, 50, 10,primaryColor),
     );
   }
 
@@ -123,7 +133,7 @@ class _LoginState extends State<Login> {
       text:TextSpan(
         text: "Dont have an Account",
         style: TextStyle(
-          color: Color.fromRGBO(0,207,253,1)
+          color: primaryColor
         ),
         recognizer: TapGestureRecognizer()..onTap =(){
           Navigator.pushNamed(context, '/register');
@@ -137,7 +147,7 @@ class _LoginState extends State<Login> {
       text:TextSpan(
         text: "Forgot password?",
         style: TextStyle(
-          color: Color.fromRGBO(0,207,253,1)
+          color: primaryColor
         ),
         recognizer: TapGestureRecognizer()..onTap =(){
           Navigator.pushNamed(context, '/forgot_password');
@@ -162,7 +172,7 @@ class _LoginState extends State<Login> {
                   Expanded(
                     flex: 2,
                     child: Center(
-                      child: Image.asset('assets/images/Logo.png',fit: BoxFit.contain),
+                      child: Image.asset(logoImg,fit: BoxFit.contain),
                     )
                   ),
                   Expanded(

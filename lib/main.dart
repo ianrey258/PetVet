@@ -1,7 +1,8 @@
 // ignore_for_file: prefer_const_constructors
-
 import 'package:face_camera/face_camera.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:vetfindapp/Pages/LoadingScreen/LoadingScreen.dart';
 import 'package:vetfindapp/Pages/clinic/message.dart';
 import 'package:vetfindapp/Pages/clinic/vet_clinic.dart';
 import 'package:vetfindapp/Pages/clinic/video_call.dart';
@@ -10,11 +11,15 @@ import 'package:vetfindapp/Pages/forgot_password/forgot_password.dart';
 import 'package:vetfindapp/Pages/forgot_password/reset_password.dart';
 import 'package:vetfindapp/Pages/login/login.dart';
 import 'package:vetfindapp/Pages/map_clinic/map_clinic.dart';
+import 'package:vetfindapp/Pages/pets/pets.dart';
+import 'package:vetfindapp/Pages/profile/user_profile.dart';
 import 'package:vetfindapp/Pages/register/register.dart';
+import 'package:vetfindapp/Style/_custom_color.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); 
   await FaceCamera.initialize(); 
+  Firebase.initializeApp(); 
   runApp(const MyApp());
 }
 
@@ -29,19 +34,19 @@ class MyApp extends StatelessWidget {
       title: 'PetVet Finder',
       theme: ThemeData(
         textTheme: TextTheme(
-          bodyText1: TextStyle(color: Colors.white),
-          bodyText2: TextStyle(color: Colors.white),
+          bodyText1: TextStyle(color: text1Color),
+          bodyText2: TextStyle(color: text1Color),
         ),
-        primaryColor: Colors.blue,
-        scaffoldBackgroundColor: Color.fromRGBO(66,74,109, 1),
-        backgroundColor: Color.fromRGBO(66,74,109, 1),
+        primaryColor: primaryColor,
+        scaffoldBackgroundColor: secondaryColor,
+        backgroundColor: secondaryColor,
         appBarTheme: AppBarTheme(
-          backgroundColor: Color.fromRGBO(66,74,109, 1)
+          backgroundColor: secondaryColor
         ),
-        buttonColor: Color.fromRGBO(0,207,253,1),
+        buttonColor: primaryColor,
         bottomSheetTheme: BottomSheetThemeData(
-          backgroundColor:Color.fromRGBO(66,74,109, 1)
-        )
+          backgroundColor:secondaryColor
+        ) 
       ),
       routes: {
         '/login': (context) => const Login(),
@@ -53,8 +58,11 @@ class MyApp extends StatelessWidget {
         '/map_clinic': (context) => const MapClinic(),
         '/message': (context) => const Message(),
         '/video_call': (context) => const VideoCall(),
+        '/loading_screen': (context) => const LoadingScreen(),
+        '/user_profile': (context) => const UserProfile(),
+        '/pets': (context) => const Pets(),
       },
-      initialRoute: '/login',
+      initialRoute: '/loading_screen',
       // home: const LoginPage(),
     );
   }

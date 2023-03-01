@@ -1,17 +1,23 @@
 // ignore_for_file: prefer_const_constructors
-import 'dart:ui';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chip_tags/flutter_chip_tags.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:banner_carousel/banner_carousel.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:smooth_star_rating_null_safety/smooth_star_rating_null_safety.dart';
+import 'package:vetfindapp/Controller/UserController.dart';
+import 'package:vetfindapp/Model/clinicModel.dart';
+import 'package:vetfindapp/Model/userModel.dart';
+import 'package:vetfindapp/Pages/_helper/image_loader.dart';
 import 'package:vetfindapp/Pages/clinic/set_appointment.dart';
 import 'package:vetfindapp/Pages/clinic/set_rating.dart';
+import 'package:vetfindapp/Style/library_style_and_constant.dart';
+import 'package:vetfindapp/Utils/SharedPreferences.dart';
 
 class VetClinic extends StatefulWidget {
-  const VetClinic({super.key});
+  final ClinicData? data;
+  const VetClinic({super.key,this.data});
 
   @override
   State<VetClinic> createState() => _VetClinicState();
@@ -20,6 +26,9 @@ class VetClinic extends StatefulWidget {
 class _VetClinicState extends State<VetClinic> {
   List<TextEditingController> text = [];
   final _key = GlobalKey<FormState>();
+  ClinicData? clinic;
+  UserModel? user;
+  final ImagePicker _picker = ImagePicker();
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> _services = ['Surgical','Anesthesi','Laboratory','Dietary Counseling']; 
 
@@ -30,6 +39,15 @@ class _VetClinicState extends State<VetClinic> {
       for (int i = 0; i < 10; i++) {
         text.add(TextEditingController());
       }
+    });
+    initLoadData();
+  }
+
+  initLoadData()async {
+    final id = await DataStorage.getData('id');
+    user = await UserController.getUser(id);
+    setState(() {
+      user = user;
     });
   }
 
@@ -47,6 +65,11 @@ class _VetClinicState extends State<VetClinic> {
     return false;
   }
 
+  logout(){
+    UserController.logoutUser();
+    Navigator.popAndPushNamed(context,'/loading_screen');
+  }
+
   Future<dynamic> showSetAppointment(){
     return showDialog(
       context: context,
@@ -57,46 +80,67 @@ class _VetClinicState extends State<VetClinic> {
   Future<dynamic> showSetRating(){
     return showDialog(
       context: context,
-      builder: (context) => const SetRating()
+      builder: (context) => SetRating(data: clinic)
     );
   }
 
   Widget drawerContainerItem(icon,text){
     return ListTile(
-      leading: FaIcon(icon,size: 25,color: Colors.white,),
+      leading: FaIcon(icon,size: 25,color: text1Color,),
       title: Center(
         child: Text(text,style: TextStyle(fontSize: 25),),
       ),
-      trailing: Icon(Icons.arrow_forward_ios_sharp,color: Colors.white,),
+      trailing: Icon(Icons.arrow_forward_ios_sharp,color: text1Color,),
       onTap: (){
         Navigator.pop(context);
         text == "Home" ? Navigator.popAndPushNamed(context,'/dashboard')
         : text == "Map" ? Navigator.pushNamed(context, '/map_clinic')
         : text == "Category" ? ''
-        : text == "Pets" ? ''
+        : text == "Pets" ? Navigator.pushNamed(context, '/pets')
         : text == "History" ? ''
         : text == "Settings" ? ''
-        : text == "Logout" ? Navigator.popAndPushNamed(context,'/login')
+        : text == "Logout" ? logout()
         : null;
       },
     );
   }
+  
+  Widget profileImage(){
+    return IconButton(
+      onPressed: () async {
+        final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+        if(image != null){
+          String img_path = await UserController.setUserPicture(image?.path??"");
+          Future.delayed(Duration(seconds: 2),(){
+            setState(() {
+              user?.profile_img = img_path;
+            });
+          });
+        }
+      }, 
+      icon: CircleAvatar(
+        radius: 100,
+        backgroundColor: text0Color,
+        child: ClipOval(
+          child: user?.profile_img != "" ? ImageLoader.loadImageNetwork(user?.profile_img??"",150.0,150.0) : FaIcon(FontAwesomeIcons.circleUser,size: 150,color: text1Color,),
+        ),
+      )
+    );
+  }
+
   Widget drawerContainer(){
     return ListView(
       children: [        
         SizedBox(
           height: 200,
           child: Container(
-            child: IconButton(
-              onPressed: (){}, 
-              icon: FaIcon(FontAwesomeIcons.circleUser,size: 150,color: Colors.white,)
-            ),
+            child: profileImage()
           ),
         ),
         SizedBox(
           height: 50,
           child: Center(
-            child: Text('User',style: TextStyle(fontSize: 25),),
+            child: Text(user?.username??"",style: TextStyle(fontSize: 25),),
           ),
         ),
         drawerContainerItem(Icons.home,'Home'),
@@ -122,29 +166,20 @@ class _VetClinicState extends State<VetClinic> {
 
   Widget clinicDetails(clinicname,rating,distance){
     return SizedBox(
-      height: 200,
+      height: 250,
       width: double.infinity,
       child: Column(
         // ignore: prefer_const_literals_to_create_immutables
         children: [
           ListTile(
-            title: Text(clinicname,style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.black),),
+            title: Text(clinicname??"",style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: text2Color),),
             trailing: Container(
               child: TextButton(
                 onPressed: (){
-                  Navigator.pushNamed(context, '/message');
+                  Navigator.pushNamed(context, '/message',arguments: clinic);
                 }, 
-                child: Text('Send Message',style: TextStyle(color: Colors.white),),
-                style: ButtonStyle(
-                  padding: MaterialStateProperty.all(EdgeInsets.only()),
-                  fixedSize: MaterialStateProperty.all(Size(100, 30)),
-                  backgroundColor: MaterialStateProperty.all(Colors.blue),
-                  shape: MaterialStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25)
-                    )
-                  )
-                ),
+                child: Text('Send Message',style: TextStyle(color: text1Color),),
+                style: buttonStyleA(100, 30, 25, primaryColor)
               )
             ),
           ),
@@ -153,16 +188,16 @@ class _VetClinicState extends State<VetClinic> {
             child: IntrinsicHeight(
               child: Row(
                 children: [
-                  Text(distance,style: TextStyle(fontSize: 18,color: Colors.grey),),
+                  Text(distance,style: TextStyle(fontSize: 18,color: text7Color),),
                   VerticalDivider(
                     width: 10,
-                    color: Colors.grey,
+                    color: text7Color,
                     thickness: 0.9,
                   ),
                   SmoothStarRating(
                     starCount: 5,
                     rating: rating,
-                    color: Colors.yellow,
+                    color: text6Color,
                     onRatingChanged: (rating){
                       showSetRating();
                     },
@@ -175,11 +210,12 @@ class _VetClinicState extends State<VetClinic> {
             padding: EdgeInsets.all(10),
             width: double.infinity,
             child: Wrap(
-              children: _services.map((e)=>Padding(
+              children: clinic!.services!.map((ClinicService e)=>Padding(
                 padding:EdgeInsets.all(2.0),
                 child: FilterChip(
-                  backgroundColor: Colors.lightBlue,
-                  label: Text(e,style: TextStyle(color: Colors.white,fontSize: 10),),
+                  backgroundColor: text1Color,
+                  side: BorderSide(color: primaryColor,),
+                  label: Text(e.name??"",style: TextStyle(color: text2Color,fontSize: 10),),
                   onSelected: (value){},
                 ) 
               )).toList(),
@@ -201,19 +237,17 @@ class _VetClinicState extends State<VetClinic> {
             width: 200,
             child: Padding(
               padding: const EdgeInsets.only(left: 30),
-              child: Text(address,style: TextStyle(color: Colors.black, fontSize: 18),),
+              child: Text(address??"",style: TextStyle(color: text2Color, fontSize: 12),),
             ),
           ),
           Container(
             padding: const EdgeInsets.only(right: 30),
-            child: TextButton(
-              style: ButtonStyle(
-                padding: MaterialStatePropertyAll(EdgeInsets.all(0))
-              ),
+            child: MaterialButton(
+              padding: EdgeInsets.all(0),
               onPressed: () {
-                Navigator.pushNamed(context, '/map_clinic');
+                Navigator.pushNamed(context, '/map_clinic',arguments: clinic);
               },
-              child: Image.asset('assets/images/cats_and_dogs_banner.png',fit: BoxFit.cover,width: 150,),
+              child: Image.asset(clinic?.banner??"",fit: BoxFit.cover,width: 150,),
             ),
           ),
         ],
@@ -230,14 +264,14 @@ class _VetClinicState extends State<VetClinic> {
         subtitle: SmoothStarRating(
           starCount: 5,
           rating: rating,
-          color: Colors.yellow,
+          color: text6Color,
         ),
         trailing: Container(
           padding: EdgeInsets.only(right: 10,bottom: 18),
           child: RichText(
             text: TextSpan(
               text: "See All",
-              style: TextStyle(color: Colors.grey,fontSize: 12),
+              style: TextStyle(color: text7Color,fontSize: 12),
               recognizer: TapGestureRecognizer()..onTap =() => {}
             ),
           ),
@@ -249,17 +283,20 @@ class _VetClinicState extends State<VetClinic> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-
+    setState(() {
+      final data = ModalRoute.of(context)!.settings.arguments as ClinicData;
+      clinic = data;
+    });
     return SafeArea(
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: Colors.white,
+        backgroundColor: text1Color,
         body: CustomScrollView(
           scrollDirection: Axis.vertical,
           slivers: <Widget>[
             SliverAppBar(
-              foregroundColor: Colors.transparent,
-              backgroundColor: Colors.transparent,
+              foregroundColor: text0Color,
+              backgroundColor: text0Color,
               forceElevated: false,
               expandedHeight: MediaQuery.of(context).size.height*.4,
               pinned: false,
@@ -270,18 +307,18 @@ class _VetClinicState extends State<VetClinic> {
                   onPressed: (){
                      Navigator.popAndPushNamed(context, '/dashboard');
                   }, 
-                  icon: FaIcon(FontAwesomeIcons.xmark,color: Colors.white,)
+                  icon: FaIcon(FontAwesomeIcons.xmark,color: text1Color,)
                 )
               ],
               flexibleSpace: FlexibleSpaceBar(
-                background: Image.asset('assets/images/cats_and_dogs_banner.png',fit: BoxFit.cover),
+                background: Image.asset(clinic?.banner??"",fit: BoxFit.cover),
               ),
             ),
             SliverList(
               delegate: SliverChildListDelegate([
-                clinicDetails("Cats And Dog",4.0,'1.3 Kilometers'),
+                clinicDetails(clinic?.name,double.parse(clinic?.rating??"0"),'1.3 Kilometers'),
                 Divider(),
-                clinicAddress('Vamenta Carmen, Cagayan de Oro City'),
+                clinicAddress(clinic?.address),
                 clinicRatingReviews(4.0),
                 SizedBox.square(dimension: 80,)
               ]),
@@ -290,13 +327,13 @@ class _VetClinicState extends State<VetClinic> {
         ),
         drawer: Drawer(
           width: size.width*.7,
-          backgroundColor: Color.fromRGBO(19,50,64,1),
+          backgroundColor: alternativeColor,
           child: drawerContainer(),
         ),
         bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Color.fromRGBO(66,74,109, 1),
-          selectedItemColor: Color.fromRGBO(0,207,253,1),
-          unselectedItemColor: Colors.white,
+          backgroundColor: secondaryColor,
+          selectedItemColor: primaryColor,
+          unselectedItemColor: text1Color,
           currentIndex: 1,
           elevation: 0,
           // ignore: prefer_const_literals_to_create_immutables
@@ -319,7 +356,7 @@ class _VetClinicState extends State<VetClinic> {
         ),
         floatingActionButton: FloatingActionButton.extended(
           label: Text('Set Appointment'),
-          backgroundColor: Colors.red,
+          backgroundColor: text4Color,
           onPressed: (){
             showSetAppointment();
           },

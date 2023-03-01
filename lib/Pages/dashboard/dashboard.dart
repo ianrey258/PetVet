@@ -1,8 +1,16 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:flutter/gestures.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:banner_carousel/banner_carousel.dart';
+import 'package:vetfindapp/Controller/FileController.dart';
+import 'package:vetfindapp/Controller/UserController.dart';
+import 'package:vetfindapp/Model/clinicModel.dart';
+import 'package:vetfindapp/Model/userModel.dart';
+import 'package:vetfindapp/Pages/_helper/image_loader.dart';
+import 'package:vetfindapp/Style/library_style_and_constant.dart';
+import 'package:vetfindapp/Utils/SharedPreferences.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -16,6 +24,8 @@ class _DashboardState extends State<Dashboard> {
   final _key = GlobalKey<FormState>();
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool obscure = true;
+  UserModel? user;
+  final ImagePicker _picker = ImagePicker();
   List<BannerModel> listBanners = [
     BannerModel(imagePath: 'assets/images/puppy.png', id: "1",boxFit: BoxFit.contain),
     BannerModel(imagePath: 'assets/images/puppy.png', id: "2",boxFit: BoxFit.contain),
@@ -30,6 +40,15 @@ class _DashboardState extends State<Dashboard> {
       for (int i = 0; i < 10; i++) {
         text.add(TextEditingController());
       }
+    });
+    initLoadData();
+  }
+
+  initLoadData()async {
+    final id = await DataStorage.getData('id');
+    user = await UserController.getUser(id);
+    setState(() {
+      user = user;
     });
   }
 
@@ -47,42 +66,68 @@ class _DashboardState extends State<Dashboard> {
     return false;
   }
 
+  logout(){
+    UserController.logoutUser();
+    Navigator.popAndPushNamed(context,'/loading_screen');
+  }
+
   Widget drawerContainerItem(icon,text){
     return ListTile(
-      leading: FaIcon(icon,size: 25,color: Colors.white,),
+      leading: FaIcon(icon,size: 25,color: text1Color,),
       title: Center(
         child: Text(text,style: TextStyle(fontSize: 25),),
       ),
-      trailing: Icon(Icons.arrow_forward_ios_sharp,color: Colors.white,),
+      trailing: Icon(Icons.arrow_forward_ios_sharp,color: text1Color,),
       onTap: (){
         Navigator.pop(context);
         text == "Home" ? _scaffoldKey.currentState?.closeDrawer()
         : text == "Map" ?  Navigator.pushNamed(context, '/map_clinic')
         : text == "Category" ? ''
-        : text == "Pets" ? ''
+        : text == "Pets" ? Navigator.pushNamed(context, '/pets')
         : text == "History" ? ''
         : text == "Settings" ? ''
-        : text == "Logout" ? Navigator.popAndPushNamed(context,'/login')
+        : text == "Logout" ? logout()
         : null;
       },
     );
   }
+
+  Widget profileImage(){
+    return IconButton(
+      onPressed: () async {
+        final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+        if(image != null){
+          String img_path = await UserController.setUserPicture(image?.path??"");
+          Future.delayed(Duration(seconds: 2),(){
+            setState(() {
+              user?.profile_img = img_path;
+            });
+          });
+        }
+      }, 
+      icon: CircleAvatar(
+        radius: 100,
+        backgroundColor: text0Color,
+        child: ClipOval(
+          child: user?.profile_img != "" ? ImageLoader.loadImageNetwork(user?.profile_img??"",150.0,150.0) : FaIcon(FontAwesomeIcons.circleUser,size: 150,color: text1Color,),
+        ),
+      )
+    );
+  }
+
   Widget drawerContainer(){
     return ListView(
       children: [        
         SizedBox(
           height: 200,
           child: Container(
-            child: IconButton(
-              onPressed: (){}, 
-              icon: FaIcon(FontAwesomeIcons.circleUser,size: 150,color: Colors.white,)
-            ),
+            child: profileImage()
           ),
         ),
         SizedBox(
           height: 50,
           child: Center(
-            child: Text('User',style: TextStyle(fontSize: 25),),
+            child: Text(user?.username??"",style: TextStyle(fontSize: 25),),
           ),
         ),
         drawerContainerItem(Icons.home,'Home'),
@@ -108,7 +153,7 @@ class _DashboardState extends State<Dashboard> {
 
   Widget greetings(){
     return SizedBox(
-      height: 60,
+      height: 80,
       width: double.infinity,
       child: Column(
         textDirection: TextDirection.ltr,
@@ -117,11 +162,11 @@ class _DashboardState extends State<Dashboard> {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 5,left: 5),
-            child: const Text("Hi! User",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25,color: Colors.black),),
+            child: Text(user?.username??"",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25,color: text2Color),),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 5,left: 5),
-            child: const Text('Good Morning!',style: TextStyle(fontSize: 20,color: Colors.black),),
+            child: Text('Good Morning!',style: TextStyle(fontSize: 20,color: text2Color),),
           )
         ],
       ),
@@ -157,15 +202,7 @@ class _DashboardState extends State<Dashboard> {
       child: Column(
         children: [
           ElevatedButton(
-            style: ButtonStyle(
-              fixedSize: MaterialStateProperty.all(Size.square(100)),
-              backgroundColor: MaterialStateProperty.all(Color.fromRGBO(66,74,109, 1)),
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(20))
-                )
-              )
-            ),
+            style: buttonStyleA(100,100,20,secondaryColor),
             onPressed: (){}, 
             child: Center(
               child: FaIcon(icon,size: 60,),
@@ -173,7 +210,7 @@ class _DashboardState extends State<Dashboard> {
           ),
           Padding(
             padding: EdgeInsets.only(top: 5),
-            child: Text(text,style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.grey),),
+            child: Text(text,style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: text7Color),),
           )
         ],
       ),
@@ -199,7 +236,7 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget vetClinic({image='assets/images/cats_and_dogs.png',required title,required address}){
+  Widget vetClinic(ClinicData data){
     return Container(
       margin: EdgeInsets.only(top: 5,bottom: 5),
       height: 90,
@@ -207,7 +244,7 @@ class _DashboardState extends State<Dashboard> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10)
         ),
-        color: Colors.grey,
+        color: text7Color,
         margin: EdgeInsets.all(1),
         child: ListTile(
           isThreeLine: true,
@@ -216,10 +253,10 @@ class _DashboardState extends State<Dashboard> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10)
             ),
-            child: Image.asset(image,height: double.infinity,width: 50)
+            child: Image.asset(data.img??"",height: double.infinity,width: 50)
           ),
-          title: Text(title,style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.black),),
-          subtitle: Text(address,style: TextStyle(fontSize: 15,color: Colors.black),),
+          title: Text(data.name??"",style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: text2Color),),
+          subtitle: Text(data.address??"",style: TextStyle(fontSize: 10,color: text2Color),),
           trailing: Container(
             width: 50,
             height: double.infinity,
@@ -231,7 +268,7 @@ class _DashboardState extends State<Dashboard> {
             ),
           ),
           onTap: (){
-            Navigator.popAndPushNamed(context, '/vet_clinic');
+            Navigator.pushNamed(context, '/vet_clinic',arguments: data);
           },
         ),
       ),
@@ -239,10 +276,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   List<Widget> vetClinics(){
-    return [
-      vetClinic(title: 'Cats and Dog',address: 'Cagayan De Oro City'),
-      vetClinic(image: 'assets/images/PetVet.png',title: 'PetVet',address: 'Cagayan De Oro City'),
-    ];
+    return ClinicData.getSampleData().map((data) => vetClinic(data)).toList();
   }
 
   @override
@@ -252,15 +286,17 @@ class _DashboardState extends State<Dashboard> {
     return SafeArea(
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: Colors.white,
+        backgroundColor: text1Color,
         appBar: AppBar(
           elevation: 0,
           centerTitle: true,
-          title: Image.asset('assets/images/Logo.png',fit: BoxFit.contain),
+          title: Image.asset(logoImg,fit: BoxFit.contain),
           leading: Container(),
           actions: [
             IconButton(
-              onPressed: (){}, 
+              onPressed: (){
+                Navigator.pushNamed(context, "/user_profile");
+              }, 
               icon: FaIcon(FontAwesomeIcons.user)
             )
           ],
@@ -274,22 +310,22 @@ class _DashboardState extends State<Dashboard> {
               children: [
                 greetings(),
                 feeds(),
-                Text("Category",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: Colors.black),),
+                Text("Category",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: text2Color),),
                 categoryFilter(),
-                Text("Nearby Veterinary",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: Colors.black),),
+                Text("Nearby Veterinary",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: text2Color),),
               ] + vetClinics(),
             ),
           )
         ),
         drawer: Drawer(
           width: size.width*.7,
-          backgroundColor: Color.fromRGBO(19,50,64,1),
+          backgroundColor: alternativeColor,
           child: drawerContainer(),
         ),
         bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Color.fromRGBO(66,74,109, 1),
-          selectedItemColor: Color.fromRGBO(0,207,253,1),
-          unselectedItemColor: Colors.white,
+          backgroundColor: secondaryColor,
+          selectedItemColor: primaryColor,
+          unselectedItemColor: text1Color,
           currentIndex: 1,
           elevation: 0,
           // ignore: prefer_const_literals_to_create_immutables

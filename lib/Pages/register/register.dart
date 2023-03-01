@@ -1,8 +1,13 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:cherry_toast/cherry_toast.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:vetfindapp/Controller/UserController.dart';
+import 'package:vetfindapp/Pages/LoadingScreen/LoadingScreen.dart';
+import 'package:vetfindapp/Style/library_style_and_constant.dart';
+
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -26,18 +31,22 @@ class _RegisterState extends State<Register> {
     });
   }
 
-  validation() async {
+  bool validation(){
     if (_key.currentState!.validate()) {
       _key.currentState!.save();
-      // LoadingScreen1.showLoadingNoMsg(context);
-      // try {
-      //   var result = await FirebaseController.loginUser(text);
-      //   return result;
-      // } catch (e) {
-      //   return false;
-      // }
+      return true;
     }
     return false;
+  }
+
+  Future afterValidation() async {
+    LoadingScreen1.showLoadingNoMsg(context);
+    try {
+      var result = await UserController.registerUser(text);
+      return result;
+    } catch (e) {
+      return false;
+    }
   }
 
   Widget _textFormField(String name, int controller, TextInputType type) {
@@ -47,7 +56,7 @@ class _RegisterState extends State<Register> {
         : IconButton(
             icon: FaIcon(
               FontAwesomeIcons.eyeSlash,
-              color: Color.fromRGBO(66,74,109, 1),
+              color: secondaryColor,
             ),
             onPressed: () {
               setState(() {
@@ -56,6 +65,12 @@ class _RegisterState extends State<Register> {
             },
           );
 
+    var validateFunc = (val) => val!.isNotEmpty ? null : "Invalid " + name;
+    if(name == "Email"){
+      RegExp checker = new RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$");
+      validateFunc = (val) => val!.isNotEmpty && checker.hasMatch(val) ? null : "Invalid " + name;
+    }
+
     return Container(
       child: Column(
         children: [
@@ -63,7 +78,7 @@ class _RegisterState extends State<Register> {
             alignment: Alignment.centerLeft,
             child: Text(
               name,
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: text1Color),
               textAlign: TextAlign.left,
             ),
           ),
@@ -73,16 +88,16 @@ class _RegisterState extends State<Register> {
               obscureText: obscures,
               keyboardType: type,
               controller: text[controller],
-              style: TextStyle(fontSize: 18, color: Color.fromRGBO(66,74,109, 1)),
-              cursorColor: Color.fromRGBO(66,74,109, 1),
+              style: TextStyle(fontSize: 18, color: secondaryColor),
+              cursorColor: secondaryColor,
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.all(15),
-                fillColor: Color.fromRGBO(229,229,229,1),
+                fillColor: text3Color,
                 filled: true,
                 // labelText: name,
                 suffixIcon: showPassword,
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color.fromRGBO(66,74,109, 1)),
+                  borderSide: BorderSide(color: secondaryColor),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 border: OutlineInputBorder(
@@ -90,7 +105,7 @@ class _RegisterState extends State<Register> {
                   borderSide: BorderSide.none
                 ),
               ),
-              validator: (val) => val!.isNotEmpty ? null : "Invalid " + name,
+              validator: validateFunc,
             ),
           )
         ],
@@ -100,21 +115,24 @@ class _RegisterState extends State<Register> {
 
   Widget registerButton(){
     return TextButton.icon(
-      icon: FaIcon(FontAwesomeIcons.arrowRight,color: Colors.white, size: 30,),
-      label: Text(""),
-      style: ButtonStyle(
-        padding: MaterialStateProperty.all(EdgeInsets.only(left: 8)),
-        fixedSize: MaterialStateProperty.all(Size(30, 50)),
-        backgroundColor: MaterialStateProperty.all(Color.fromRGBO(0,207,253,1)),
-        shape: MaterialStateProperty.all(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10)
-          )
-        )
+      icon: Padding(
+        padding: EdgeInsets.only(left: 8),
+        child: FaIcon(FontAwesomeIcons.arrowRight,color: text1Color, size: 30,),
       ),
-      onPressed: (){
-        Navigator.pop(context);
-        Navigator.popAndPushNamed(context, '/dashboard');
+      label: Text(""),
+      style: buttonStyleA(30, 50, 10, primaryColor),
+      onPressed: () async {
+        if(!validation()){
+          return null; 
+        }
+        if(await afterValidation()){
+          Navigator.pop(context);
+          Navigator.pop(context);
+          Navigator.popAndPushNamed(context, '/loading_screen');
+        } else{
+          Navigator.pop(context);
+          CherryToast.error(title: Text("Register Error!", style: TextStyle(fontSize: 12),),).show(context);
+        }
       },
     );
   }
@@ -124,7 +142,7 @@ class _RegisterState extends State<Register> {
       text:TextSpan(
         text: "Already have an Account!",
         style: TextStyle(
-          color: Color.fromRGBO(0,207,253,1)
+          color: primaryColor
         ),
         recognizer: TapGestureRecognizer()..onTap =(){
           Navigator.popAndPushNamed(context, '/login');
@@ -150,7 +168,7 @@ class _RegisterState extends State<Register> {
               Expanded(
                 flex: 2,
                 child: Center(
-                  child: Image.asset('assets/images/Logo.png',fit: BoxFit.contain),
+                  child: Image.asset(logoImg,fit: BoxFit.contain),
                 )
               ),
               Expanded(
