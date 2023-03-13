@@ -52,10 +52,11 @@ class AnimalData{
 }
 
 class PetModel{
-  String? id,pet_name,pet_type,pet_gender,pet_img;
+  String? id,user_id,pet_name,pet_type,pet_gender,pet_img;
 
   PetModel(
     this.id,
+    this.user_id,
     this.pet_name,
     this.pet_type,
     this.pet_gender,
@@ -64,6 +65,7 @@ class PetModel{
 
   PetModel.fromMap(Map<String, dynamic> json)
       : id = json['id'],
+        user_id = json['user_id'],
         pet_name = json['pet_name'],
         pet_type = json['pet_type'],
         pet_gender = json['pet_gender'],
@@ -72,6 +74,7 @@ class PetModel{
 
   Map<String, dynamic> toMap() => {
         "id": id,
+        "user_id": user_id,
         "pet_name": pet_name,
         "pet_type": pet_type,
         "pet_gender": pet_gender,

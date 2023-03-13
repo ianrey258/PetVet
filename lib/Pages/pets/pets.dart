@@ -4,6 +4,7 @@ import 'package:cherry_toast/resources/arrays.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:vetfindapp/Controller/ClinicController.dart';
 import 'package:vetfindapp/Controller/PetController.dart';
 import 'package:vetfindapp/Controller/UserController.dart';
 import 'package:vetfindapp/Model/petModel.dart';
@@ -25,6 +26,7 @@ class _PetsState extends State<Pets> {
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final _key = GlobalKey<FormState>();
   List<TextEditingController> text = [];
+  bool refresh = false;
 
   @override
   initState() {
@@ -50,12 +52,27 @@ class _PetsState extends State<Pets> {
     // });
   }
 
+  refreshPage(){
+    setState(() {
+      refresh = !refresh;
+    });
+  }
+
   Future<dynamic> showPetDialog([PetModel? pet]){
     return showDialog(
       context: context,
       builder: (context) => Pet(),
       routeSettings: pet != null ? RouteSettings(arguments: pet): null
     );
+  }
+  
+  Future removePet(PetModel? pet) async {
+    bool result = await PetController.removePet(pet!);
+    if(!result){
+      return CherryToast.error(title: Text('Error Remove'),toastPosition: Position.bottom).show(context);
+    }
+    refreshPage();
+    return CherryToast.success(title: Text('${pet.pet_name} Remove'),toastPosition: Position.bottom).show(context);
   }
 
   Widget showPets(List<PetModel> _pets){
@@ -78,10 +95,19 @@ class _PetsState extends State<Pets> {
             ],
           ),
           trailing: Container(
-            child: IconButton(
-              icon: FaIcon(Icons.edit_square,size: 35,),
-              onPressed: () async => await showPetDialog(pet),
-            ),
+            width: 100,
+            child: Row(
+              children: [
+                IconButton(
+                  icon: FaIcon(Icons.edit_square,size: 35,),
+                  onPressed: () async => await showPetDialog(pet),
+                ),
+                IconButton(
+                  icon: FaIcon(FontAwesomeIcons.trash,size: 35,color: text4Color,),
+                  onPressed: () async => await removePet(pet),
+                ),
+              ],
+            )
           ),
         ) 
       ).toList(),

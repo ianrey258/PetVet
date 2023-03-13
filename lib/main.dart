@@ -3,6 +3,8 @@ import 'package:face_camera/face_camera.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:vetfindapp/Pages/LoadingScreen/LoadingScreen.dart';
+import 'package:vetfindapp/Pages/apointment/apointmets.dart';
+import 'package:vetfindapp/Pages/apointment/show_appointment.dart';
 import 'package:vetfindapp/Pages/clinic/message.dart';
 import 'package:vetfindapp/Pages/clinic/vet_clinic.dart';
 import 'package:vetfindapp/Pages/clinic/video_call.dart';
@@ -61,6 +63,8 @@ class MyApp extends StatelessWidget {
         '/loading_screen': (context) => const LoadingScreen(),
         '/user_profile': (context) => const UserProfile(),
         '/pets': (context) => const Pets(),
+        '/apointments': (context) => const Apointments(),
+        '/show_apointment': (context) => const ShowAppointment(),
       },
       initialRoute: '/loading_screen',
       // home: const LoginPage(),

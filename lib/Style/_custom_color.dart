@@ -13,3 +13,4 @@ Color get text5Color => Color.fromRGBO(203, 211, 169, 1);
 Color get text6Color => Colors.yellow;
 Color get text7Color => Colors.grey;
 Color get text8Color => Colors.purple;
+Color get text9Color => Colors.green;

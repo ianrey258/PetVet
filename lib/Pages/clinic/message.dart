@@ -15,7 +15,7 @@ class _MessageState extends State<Message> {
   final ScrollController _sc = ScrollController();
   List<TextEditingController> text = [];
   final _key = GlobalKey<FormState>();
-  ClinicData? clinic;
+  ClinicModel? clinic;
   @override
   initState() {
     super.initState();
@@ -30,7 +30,7 @@ class _MessageState extends State<Message> {
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     setState(() {
-      final data = ModalRoute.of(context)!.settings.arguments as ClinicData;
+      final data = ModalRoute.of(context)!.settings.arguments as ClinicModel;
       clinic = data;
     });
 
@@ -40,7 +40,7 @@ class _MessageState extends State<Message> {
         appBar: AppBar(
           elevation: 0,
           centerTitle: true,
-          title: Text(clinic?.name??"",textAlign: TextAlign.center),
+          title: Text(clinic?.clinic_name??"",textAlign: TextAlign.center),
           actions: [
             Center(
               child: IconButton(

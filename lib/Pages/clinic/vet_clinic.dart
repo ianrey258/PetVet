@@ -26,7 +26,7 @@ class VetClinic extends StatefulWidget {
 class _VetClinicState extends State<VetClinic> {
   List<TextEditingController> text = [];
   final _key = GlobalKey<FormState>();
-  ClinicData? clinic;
+  ClinicModel? clinic;
   UserModel? user;
   final ImagePicker _picker = ImagePicker();
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -73,7 +73,7 @@ class _VetClinicState extends State<VetClinic> {
   Future<dynamic> showSetAppointment(){
     return showDialog(
       context: context,
-      builder: (context) => const SetAppointment()
+      builder: (context) => SetAppointment(clinic: clinic)
     );
   }
   
@@ -95,7 +95,7 @@ class _VetClinicState extends State<VetClinic> {
         Navigator.pop(context);
         text == "Home" ? Navigator.popAndPushNamed(context,'/dashboard')
         : text == "Map" ? Navigator.pushNamed(context, '/map_clinic')
-        : text == "Category" ? ''
+        : text == "Apointments" ? Navigator.pushNamed(context, '/apointments')
         : text == "Pets" ? Navigator.pushNamed(context, '/pets')
         : text == "History" ? ''
         : text == "Settings" ? ''
@@ -145,7 +145,7 @@ class _VetClinicState extends State<VetClinic> {
         ),
         drawerContainerItem(Icons.home,'Home'),
         drawerContainerItem(FontAwesomeIcons.mapLocationDot,'Map'),
-        drawerContainerItem(FontAwesomeIcons.objectGroup,'Category'),
+        drawerContainerItem(FontAwesomeIcons.objectGroup,'Apointments'),
         drawerContainerItem(Icons.pets,'Pets'),
         drawerContainerItem(Icons.history,'History'),
         drawerContainerItem(FontAwesomeIcons.userGear,'Settings'),
@@ -179,7 +179,7 @@ class _VetClinicState extends State<VetClinic> {
                   Navigator.pushNamed(context, '/message',arguments: clinic);
                 }, 
                 child: Text('Send Message',style: TextStyle(color: text1Color),),
-                style: buttonStyleA(100, 30, 25, primaryColor)
+                style: buttonStyleA(115, 30, 25, primaryColor)
               )
             ),
           ),
@@ -207,15 +207,16 @@ class _VetClinicState extends State<VetClinic> {
             ),
           ),
           Container(
+            height: 10,
             padding: EdgeInsets.all(10),
             width: double.infinity,
             child: Wrap(
-              children: clinic!.services!.map((ClinicService e)=>Padding(
+              children: clinic!.services.map((service)=>Padding(
                 padding:EdgeInsets.all(2.0),
                 child: FilterChip(
                   backgroundColor: text1Color,
                   side: BorderSide(color: primaryColor,),
-                  label: Text(e.name??"",style: TextStyle(color: text2Color,fontSize: 10),),
+                  label: Text(service??"",style: TextStyle(color: text2Color,fontSize: 10),),
                   onSelected: (value){},
                 ) 
               )).toList(),
@@ -247,7 +248,7 @@ class _VetClinicState extends State<VetClinic> {
               onPressed: () {
                 Navigator.pushNamed(context, '/map_clinic',arguments: clinic);
               },
-              child: Image.asset(clinic?.banner??"",fit: BoxFit.cover,width: 150,),
+              child: clinic!.clinic_img != "" || clinic!.clinic_img != null ? ImageLoader.loadImageNetwork(clinic!.clinic_img??"",150.0,150.0) : Container(),
             ),
           ),
         ],
@@ -284,7 +285,7 @@ class _VetClinicState extends State<VetClinic> {
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
     setState(() {
-      final data = ModalRoute.of(context)!.settings.arguments as ClinicData;
+      final data = ModalRoute.of(context)!.settings.arguments as ClinicModel;
       clinic = data;
     });
     return SafeArea(
@@ -311,15 +312,15 @@ class _VetClinicState extends State<VetClinic> {
                 )
               ],
               flexibleSpace: FlexibleSpaceBar(
-                background: Image.asset(clinic?.banner??"",fit: BoxFit.cover),
+                background: clinic!.clinic_img_banner != "" || clinic!.clinic_img_banner != null ? ImageLoader.loadImageNetwork(clinic!.clinic_img_banner??"",150.0,150.0) : Container(),
               ),
             ),
             SliverList(
               delegate: SliverChildListDelegate([
-                clinicDetails(clinic?.name,double.parse(clinic?.rating??"0"),'1.3 Kilometers'),
+                clinicDetails(clinic?.clinic_name,double.parse(clinic?.clinic_rating??"0"),'1.3 Kilometers'),
                 Divider(),
-                clinicAddress(clinic?.address),
-                clinicRatingReviews(4.0),
+                clinicAddress(clinic?.clinic_address),
+                clinicRatingReviews(double.parse(clinic?.clinic_rating??'0.0')),
                 SizedBox.square(dimension: 80,)
               ]),
             ),

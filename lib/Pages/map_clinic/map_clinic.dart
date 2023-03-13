@@ -7,14 +7,16 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:vetfindapp/Controller/ClinicController.dart';
 import 'package:vetfindapp/Model/clinicModel.dart';
 import 'package:vetfindapp/Model/petModel.dart';
+import 'package:vetfindapp/Pages/_helper/image_loader.dart';
 import 'package:vetfindapp/Services/geo_location.dart';
 import 'package:vetfindapp/Style/library_style_and_constant.dart';
 
 
 class MapClinic extends StatefulWidget {
-  final ClinicData? data;
+  final ClinicModel? data;
   const MapClinic({super.key,this.data});
 
   @override
@@ -28,8 +30,8 @@ class _MapClinicState extends State<MapClinic> {
   List<AnimalData>? selectedAnimalCategory = [];
   List<ClinicService>? selectedClinicServices = [];
   LatLng _currentlatlng = LatLng(0, 0);
-  ClinicData? clinic;
-  List<ClinicData> Clinics = ClinicData.getSampleData();
+  ClinicModel? clinic;
+  List<ClinicModel>? Clinics;
   List<LatLng> _points = [];
   final _accessToken = "pk.eyJ1IjoiaWFucmV5MjU4IiwiYSI6ImNrYjI3eXF0cTA4bjgyd28yeGJta2dtNmQifQ.LtqueENclx7vVAp6IfEusA";
   final _typeMap = "mapbox.mapbox-streets-v8";
@@ -44,12 +46,20 @@ class _MapClinicState extends State<MapClinic> {
     });
     Future.delayed(Duration(seconds: 1),()async {
       if(ModalRoute.of(super.context)!.settings.arguments != null){
-        final data = ModalRoute.of(super.context)!.settings.arguments as ClinicData;
+        final data = ModalRoute.of(super.context)!.settings.arguments as ClinicModel;
         setState(() {
           clinic = data;
         });
     }
-    clinic?.name != null ? getLocationStore() : getLocation();
+    clinic?.clinic_name != null ? getLocationStore() : getLocation();
+    });
+    initLoadData();
+  }
+
+  initLoadData()async {
+    List clinic_list = await ClinicController.getClinics(); 
+    setState(() {
+      Clinics = clinic_list as List<ClinicModel>;
     });
   }
 
@@ -64,7 +74,7 @@ class _MapClinicState extends State<MapClinic> {
   Future getLocationStore({zoom: 15.0}) async {
     Future.delayed(Duration(seconds: 1),()async {
       Position position = await GeolocationModule.getPosition();
-      LatLng _storelatlng = LatLng(double.parse(clinic!.lat??"0"),double.parse(clinic!.lng??"0"));
+      LatLng _storelatlng = LatLng(double.parse(clinic!.clinic_lat??"0"),double.parse(clinic!.clinic_long??"0"));
 
       setState(() {
         _currentlatlng = LatLng(position.latitude, position.longitude);
@@ -74,38 +84,42 @@ class _MapClinicState extends State<MapClinic> {
     });
   }
 
-  bool checkStoreOnFilter(ClinicData data,List<ClinicService> services){
+  bool checkStoreOnFilter(ClinicModel data,List<String> services){
     bool hasService = false;
-    services?.forEach((service) { 
+    services.forEach((service) { 
       selectedClinicServices?.forEach((filter) { 
-        if(!hasService && service.name == filter.name){
+        if(!hasService && service == filter.name){
           hasService = !hasService;
         }
       });
     });
-    LatLng _storelatlng = LatLng(double.parse(data!.lat??"0"),double.parse(data!.lng??"0"));
+    LatLng _storelatlng = LatLng(double.parse(data!.clinic_lat??"0"),double.parse(data!.clinic_long??"0"));
     if(hasService) _mapController.move(_storelatlng, 14.5);
     return hasService;
   }
 
   List<Marker> generateStoreMarker(){
-    print(selectedClinicServices);
-    return Clinics!.map((ClinicData data)=>
-      !checkStoreOnFilter(data,data!.services!) && selectedClinicServices!.isNotEmpty
+    if(Clinics == null){
+      return [];
+    }
+    return Clinics!.map((ClinicModel data)=>
+      !checkStoreOnFilter(data,data.services.map((e) => e.toString()).toList()) && selectedClinicServices!.isNotEmpty
       ? Marker(point: LatLng(0, 0), builder: (context)=>SizedBox.shrink())
       : 
       Marker(
         height: 80,
         width: 80,
         rotate: true,
-        point: LatLng(double.parse(data.lat??"0"),double.parse(data.lng??"0")), 
+        point: LatLng(double.parse(data.clinic_lat??"0"),double.parse(data.clinic_long??"0")), 
         builder: (context) => Container(
+          width: 100,
+          height: 100,
           margin: EdgeInsets.only(bottom: 10),
           child: ListTile(
             title: Center(
-              child: Image.asset(data.img??"",fit: BoxFit.fill),
+              child: data.clinic_img != "" || data.clinic_img != null ? ImageLoader.loadImageNetwork(data.clinic_img??"",80.0,80.0) : FaIcon(FontAwesomeIcons.store,size: 80,color: text1Color),
             ),
-            subtitle: Text(data.name??"",textAlign: TextAlign.center,),
+            subtitle: Text(data.clinic_name??"",textAlign: TextAlign.center,style: TextStyle(fontWeight: FontWeight.bold),),
             onTap: (){
               // if(clinic?.name != null){
               //   Navigator.pop(context);

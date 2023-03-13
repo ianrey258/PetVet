@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:rating_dialog/rating_dialog.dart';
 import 'package:vetfindapp/Model/clinicModel.dart';
+import 'package:vetfindapp/Pages/_helper/image_loader.dart';
 import 'package:vetfindapp/Style/library_style_and_constant.dart';
 
 class SetRating extends StatefulWidget {
-  final ClinicData? data;
+  final ClinicModel? data;
   const SetRating({Key? key,this.data}) : super(key: key);
 
   @override
@@ -18,7 +19,7 @@ class _SetRatingState extends State<SetRating> {
   final ScrollController _sc = ScrollController();
   List<TextEditingController> text = [];
   final _key = GlobalKey<FormState>();
-  ClinicData? clinic;
+  ClinicModel? clinic;
 
   @override
   initState() {
@@ -38,8 +39,8 @@ class _SetRatingState extends State<SetRating> {
     });
 
     return RatingDialog(
-      title: Text(clinic?.name??"",textAlign: TextAlign.center),
-      image: Image.asset(clinic?.img??"",fit: BoxFit.contain,width: 50,height: 50),
+      title: Text(clinic?.clinic_name??"",textAlign: TextAlign.center),
+      image: clinic?.clinic_img != "" || clinic?.clinic_img != null ? ImageLoader.loadImageNetwork(clinic?.clinic_img??"",50.0,50.0) : FaIcon(FontAwesomeIcons.store,size: 50,color: text1Color),
       message: Text('Rate me and have a comment for my clinic services!',textAlign: TextAlign.center,style: TextStyle(fontSize: 15),), 
       submitButtonText: 'Submit', 
       onSubmitted: (response){  

@@ -5,7 +5,7 @@ import 'package:vetfindapp/Controller/FileController.dart';
 
 class ImageLoader  {
 
-  static Widget loadImageNetwork(String path,[width = 120.0,hieght = 120.0]){
+  static Widget loadImageNetwork(String path,[double width = 120.0,double hieght = 120.0]){
     return FutureBuilder(
       future: FileController.getFileURL(path),
       builder: (BuildContext context, AsyncSnapshot snapshot){
@@ -13,11 +13,19 @@ class ImageLoader  {
           try{
             return Image.network(snapshot.data,height: hieght,width: width,fit: BoxFit.fill,);
           }catch(e){
-            Center(child: CircularProgressIndicator());
+            return const Center(
+              widthFactor: 2,
+              heightFactor: 2,
+              child: CircularProgressIndicator()
+            );
           }
         }
         if(snapshot.connectionState == ConnectionState.waiting){
-          return Center(child: CircularProgressIndicator());
+          return const Center(
+            widthFactor: 2,
+            heightFactor: 2,
+            child: CircularProgressIndicator()
+          );
         }
         return Container();
       }

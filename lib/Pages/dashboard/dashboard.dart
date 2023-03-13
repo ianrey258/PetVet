@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:banner_carousel/banner_carousel.dart';
+import 'package:vetfindapp/Controller/ClinicController.dart';
 import 'package:vetfindapp/Controller/FileController.dart';
 import 'package:vetfindapp/Controller/UserController.dart';
 import 'package:vetfindapp/Model/clinicModel.dart';
@@ -25,6 +26,7 @@ class _DashboardState extends State<Dashboard> {
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool obscure = true;
   UserModel? user;
+  List<ClinicModel>? clinics;
   final ImagePicker _picker = ImagePicker();
   List<BannerModel> listBanners = [
     BannerModel(imagePath: 'assets/images/puppy.png', id: "1",boxFit: BoxFit.contain),
@@ -47,8 +49,10 @@ class _DashboardState extends State<Dashboard> {
   initLoadData()async {
     final id = await DataStorage.getData('id');
     user = await UserController.getUser(id);
+    List clinic_list = await ClinicController.getClinics(); 
     setState(() {
       user = user;
+      clinics = clinic_list as List<ClinicModel>;
     });
   }
 
@@ -82,7 +86,7 @@ class _DashboardState extends State<Dashboard> {
         Navigator.pop(context);
         text == "Home" ? _scaffoldKey.currentState?.closeDrawer()
         : text == "Map" ?  Navigator.pushNamed(context, '/map_clinic')
-        : text == "Category" ? ''
+        : text == "Apointments" ? Navigator.pushNamed(context, '/apointments')
         : text == "Pets" ? Navigator.pushNamed(context, '/pets')
         : text == "History" ? ''
         : text == "Settings" ? ''
@@ -132,7 +136,7 @@ class _DashboardState extends State<Dashboard> {
         ),
         drawerContainerItem(Icons.home,'Home'),
         drawerContainerItem(FontAwesomeIcons.mapLocationDot,'Map'),
-        drawerContainerItem(FontAwesomeIcons.objectGroup,'Category'),
+        drawerContainerItem(FontAwesomeIcons.objectGroup,'Apointments'),
         drawerContainerItem(Icons.pets,'Pets'),
         drawerContainerItem(Icons.history,'History'),
         drawerContainerItem(FontAwesomeIcons.userGear,'Settings'),
@@ -236,7 +240,8 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget vetClinic(ClinicData data){
+  Widget vetClinic(ClinicModel data){
+    print(data.clinic_img);
     return Container(
       margin: EdgeInsets.only(top: 5,bottom: 5),
       height: 90,
@@ -253,10 +258,11 @@ class _DashboardState extends State<Dashboard> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10)
             ),
-            child: Image.asset(data.img??"",height: double.infinity,width: 50)
+            // child: FaIcon(FontAwesomeIcons.store,size: 50,color: text1Color),
+            child: data.clinic_img != "" && data.clinic_img != null ? ImageLoader.loadImageNetwork(data.clinic_img??"",50,50) : FaIcon(FontAwesomeIcons.store,size: 50,color: text1Color)
           ),
-          title: Text(data.name??"",style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: text2Color),),
-          subtitle: Text(data.address??"",style: TextStyle(fontSize: 10,color: text2Color),),
+          title: Text(data.clinic_name??"",style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: text2Color),),
+          subtitle: Text(data.clinic_address??"",style: TextStyle(fontSize: 10,color: text2Color),),
           trailing: Container(
             width: 50,
             height: double.infinity,
@@ -276,7 +282,10 @@ class _DashboardState extends State<Dashboard> {
   }
 
   List<Widget> vetClinics(){
-    return ClinicData.getSampleData().map((data) => vetClinic(data)).toList();
+    if(clinics == null){
+      return [Center(heightFactor: 100, child: CircularProgressIndicator(),)];
+    }
+    return clinics!.map((data) => vetClinic(data)).toList();
   }
 
   @override
@@ -313,7 +322,8 @@ class _DashboardState extends State<Dashboard> {
                 Text("Category",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: text2Color),),
                 categoryFilter(),
                 Text("Nearby Veterinary",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: text2Color),),
-              ] + vetClinics(),
+              ] 
+              + vetClinics(),
             ),
           )
         ),

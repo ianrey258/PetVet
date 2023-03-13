@@ -146,15 +146,15 @@ class ClinicService{
     return services.reduce((listData,data)=>ClinicService(name: data));
   }
 }
-
 class ClinicModel{
-  String? id,clinic_name,clinic_doctor,clinic_address,clinic_img,clinic_img_banner,clinic_lat,clinic_long,clinic_rating;
-  List<String> services;
+  String? id,clinic_name,clinic_doctor,clinic_email,clinic_address,clinic_img,clinic_img_banner,clinic_lat,clinic_long,clinic_rating;
+  List services;
 
   ClinicModel(
     this.id,
     this.clinic_name,
     this.clinic_doctor,
+    this.clinic_email,
     this.clinic_address,
     this.clinic_img,
     this.clinic_img_banner,
@@ -168,19 +168,21 @@ class ClinicModel{
       : id = json['id'],
         clinic_name = json['clinic_name'],
         clinic_doctor = json['clinic_doctor'],
+        clinic_email = json['clinic_email'],
         clinic_address = json['clinic_address'],
         clinic_img = json['clinic_img'],
         clinic_img_banner = json['clinic_img_banner'],
         clinic_lat = json['clinic_lat'],
         clinic_long = json['clinic_long'],
         clinic_rating = json['clinic_rating'],
-        services = json['services']
+        services = json['services'] as List
     ;
 
   Map<String, dynamic> toMap() => {
         "id" : id,
         "clinic_name" : clinic_name,
         "clinic_doctor" : clinic_doctor,
+        "clinic_email" : clinic_email,
         "clinic_address" : clinic_address,
         "clinic_img" : clinic_img,
         "clinic_img_banner" : clinic_img_banner,
@@ -191,39 +193,5 @@ class ClinicModel{
       };
 }
 
-
-class ClinicApointmentModel{
-  String? id,schedule_datetime,datetime_created,reason,payment,status,pet_owner;
-
-  ClinicApointmentModel(
-    this.id,
-    this.schedule_datetime,
-    this.datetime_created,
-    this.reason,
-    this.payment,
-    this.status,
-    this.pet_owner
-  );
-
-  ClinicApointmentModel.fromMap(Map<String, dynamic> json):
-      id = json['id'],
-      schedule_datetime = json['schedule_datetime'],
-      datetime_created = json['datetime_created'],
-      reason = json['reason'],
-      payment = json['payment'],
-      status = json['status'],
-      pet_owner = json['pet_owner']
-    ;
-
-  Map<String, dynamic> toMap() => {
-      "id": id,
-      "schedule_datetime": schedule_datetime,
-      "datetime_created": datetime_created,
-      "reason": reason,
-      "payment": payment,
-      "status": status,
-      "pet_owner": pet_owner
-    };
-}
 
 

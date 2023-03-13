@@ -16,6 +16,9 @@ class UserController{
   static loginUser(List<TextEditingController> data) async {
     try{
       UserCredential fb_auth = await firabaseAuth.signInWithEmailAndPassword(email: data[0].value.text.toString().toLowerCase(), password: data[1].value.text.toString());
+      if(!await isInEmail(data[0].value.text.toString().toLowerCase())){
+        return false;
+      }
       await DataStorage.setData('email', data[0].value.text.toString().toLowerCase());
       DocumentSnapshot user_doc = await firestore.collection('users').doc(fb_auth.user?.uid??"").get();
       UserModel user = UserModel.fromMap(jsonDecode(jsonEncode(user_doc.data())));

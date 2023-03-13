@@ -4,11 +4,18 @@ import 'package:datetime_picker_formfield_new/datetime_picker_formfield_new.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:vetfindapp/Controller/ApointmentController.dart';
+import 'package:vetfindapp/Controller/PetController.dart';
+import 'package:vetfindapp/Model/apointmentModel.dart';
+import 'package:vetfindapp/Model/clinicModel.dart';
+import 'package:vetfindapp/Model/petModel.dart';
+import 'package:vetfindapp/Pages/_helper/image_loader.dart';
 import 'package:vetfindapp/Style/library_style_and_constant.dart';
 
 
 class SetAppointment extends StatefulWidget {
-  const SetAppointment({Key? key}) : super(key: key);
+  final ClinicModel? clinic;
+  const SetAppointment({Key? key,this.clinic}) : super(key: key);
 
   @override
   _SetAppointmentState createState() => _SetAppointmentState();
@@ -16,10 +23,16 @@ class SetAppointment extends StatefulWidget {
 
 class _SetAppointmentState extends State<SetAppointment> {
   final ScrollController _sc = ScrollController();
+  DateTime today = DateTime.now();
   List<TextEditingController> text = [];
   final _key = GlobalKey<FormState>();
-  List<bool> _values = [false,false,false];
   String payment = ''; 
+  String schedule = ''; 
+  ClinicModel? clinic;
+  ClinicApointmentModel? apointment;
+  List<String> status = ['Pending','Approved','Declined'];
+  List<String> selected_pets = [];
+  List<PetModel> pets = [];
   final datetime_format = DateFormat("yyyy-MM-dd HH:mm");
 
   @override
@@ -30,6 +43,39 @@ class _SetAppointmentState extends State<SetAppointment> {
         text.add(TextEditingController());
       }
     });
+    initLoadData();
+  }
+
+  initLoadData() async {
+    List<PetModel> pet_list = await PetController.getPetList();
+    setState(() {
+      pets = pet_list;
+      apointment = ClinicApointmentModel("","","","","","","","",[]);
+    });
+  }
+
+  validation() async {
+    if(schedule.isEmpty || selected_pets.isEmpty){
+      return false;
+    }
+    if (_key.currentState!.validate()) {
+      _key.currentState!.save();
+      setState(() {
+        apointment?.clinic_id = clinic?.id;
+        apointment?.datetime_created = today.toString();
+        apointment?.reason = text[0].text;
+        apointment?.schedule_datetime = schedule;
+        apointment?.status = status[0];
+        apointment?.pet_list_ids = selected_pets;
+        apointment?.payment = payment;
+      });
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> afterValidation() async {
+    return await ApointmentController.setApointment(apointment!);
   }
 
   Widget _textFormField(String name, int controller, TextInputType type) {
@@ -103,15 +149,21 @@ class _SetAppointmentState extends State<SetAppointment> {
         if (date != null) {
           final time = await showTimePicker(context: context,initialTime:TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
           );
+          setState(() {
+            schedule = DateTimeField.combine(date, time).toString(); 
+          });
           return DateTimeField.combine(date, time);
         } else {
+          setState(() {
+            schedule = currentValue.toString(); 
+          });
           return currentValue;
         }
       },
     );
   }
 
-  Widget pet({image='assets/images/cat.jpg',required title,required checkedIndex}){
+  Widget pet(PetModel pet){
     return Container(
       margin: EdgeInsets.only(top: 5,bottom: 5),
       height: 60,
@@ -127,9 +179,10 @@ class _SetAppointmentState extends State<SetAppointment> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10)
             ),
-            child: Image.asset(image,height: double.infinity,width: 50)
+            // child: Image.asset(image,height: double.infinity,width: 50)
+            child: pet?.pet_img != null && pet?.pet_img != "" ? ImageLoader.loadImageNetwork(pet?.pet_img??"",50.0,50.0) : FaIcon(Icons.pets,size: 50,)
           ),
-          title: Text(title,style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: text2Color),),
+          title: Text(pet.pet_name??"",style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: text2Color),),
           trailing: Container(
             width: 50,
             height: double.infinity,
@@ -137,17 +190,17 @@ class _SetAppointmentState extends State<SetAppointment> {
               borderRadius: BorderRadius.circular(50)
             ),
             child: Checkbox(
-              value: _values[checkedIndex],
+              value: selected_pets.contains(pet.id??''),
               onChanged: (bool? value){
                 setState(() {
-                  _values[checkedIndex] = value!;
+                  !selected_pets.contains(pet.id??'') ? selected_pets.add(pet.id??'') : selected_pets.remove(pet.id??'');
                 });
               },
             )
           ),
           onTap: (){
             setState(() {
-              _values[checkedIndex] = !_values[checkedIndex];
+              !selected_pets.contains(pet.id??'') ? selected_pets.add(pet.id??'') : selected_pets.remove(pet.id??'');
             });
           },
         ),
@@ -161,11 +214,7 @@ class _SetAppointmentState extends State<SetAppointment> {
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            pet(title: 'Bruno',image: 'assets/images/cat.jpg',checkedIndex: 0),
-            pet(title: 'Chella',image: 'assets/images/cat.jpg',checkedIndex: 1),
-            pet(title: 'Mika',image: 'assets/images/cat.jpg',checkedIndex: 2),
-          ],
+          children: pets.map((PetModel _pet) => pet(_pet)).toList(),
         ),
       )
     );
@@ -235,6 +284,9 @@ class _SetAppointmentState extends State<SetAppointment> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
+    setState(() {
+      clinic = widget.clinic;
+    });
 
     return AlertDialog(
       title: Text('Set Appointment',style: TextStyle(fontSize: 20,color: text2Color),),
@@ -257,7 +309,23 @@ class _SetAppointmentState extends State<SetAppointment> {
           style:  buttonStyleA(80,30,25,text4Color)
         ),
         TextButton(
-          onPressed: (){
+          onPressed: () async {
+            if(!await validation()){
+              return CherryToast.error(
+                title: Text('Error Input!'),
+                toastPosition: Position.bottom,
+                displayCloseButton: false,
+                animationType: AnimationType.fromRight,
+              ).show(context); 
+            }
+            if(! await afterValidation()){
+              return CherryToast.error(
+                title: Text('Set Appointment on Error!'),
+                toastPosition: Position.bottom,
+                displayCloseButton: false,
+                animationType: AnimationType.fromRight,
+              ).show(context); 
+            }
             Navigator.pop(context);
             CherryToast.success(
               title: Text('Set Appointment Successfuly!'),

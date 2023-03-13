@@ -23,7 +23,7 @@ class _PetState extends State<Pet> {
   List<TextEditingController> text = [];
   final _key = GlobalKey<FormState>();
   String local_img_path = "";
-  PetModel? pet = PetModel("","","","","");
+  PetModel? pet = PetModel("","","","","","");
   List<String> pet_types = AnimalData.getAnimalTypes();
 
   @override

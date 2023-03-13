@@ -75,7 +75,7 @@ class LoadingScreen1 {
     );
   }
 
-  static showResultDialog(BuildContext context, String msg, double fsize) {
+  static Future showResultDialog(BuildContext context, String msg, double fsize) {
     return showDialog(
     context: context,
     barrierDismissible: false,
@@ -95,7 +95,79 @@ class LoadingScreen1 {
               child: Text('Ok'),
             ),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context,true);
+            },
+          ),
+        ],
+      );
+    });
+  }
+  
+  static Future showAlertDialog(BuildContext context, String msg, double fsize) {
+    return showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        elevation: 5.0,
+        content: Container(
+            height: MediaQuery.of(context).size.height * .05,
+            child: Center(
+                child: Text(
+              msg,
+              style: TextStyle(fontSize: fsize),
+            ))),
+        actions: <Widget>[
+          TextButton(
+            child: Container(
+              child: Text('Cancel'),
+            ),
+            onPressed: () {
+              Navigator.pop(context,false);
+            },
+          ),
+          TextButton(
+            child: Container(
+              child: Text('Ok'),
+            ),
+            onPressed: () {
+              Navigator.pop(context,true);
+            },
+          ),
+        ],
+      );
+    });
+  }
+  
+  static showAlertDialog1(BuildContext context, String msg, double fsize) {
+    return showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        elevation: 5.0,
+        content: Container(
+            height: MediaQuery.of(context).size.height * .05,
+            child: Center(
+                child: Text(
+              msg,
+              style: TextStyle(fontSize: fsize),
+            ))),
+        actions: <Widget>[
+          TextButton(
+            child: Container(
+              child: Text('No'),
+            ),
+            onPressed: () {
+              Navigator.pop(context,false);
+            },
+          ),
+          TextButton(
+            child: Container(
+              child: Text('Yes'),
+            ),
+            onPressed: () {
+              Navigator.pop(context,true);
             },
           ),
         ],

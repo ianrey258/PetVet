@@ -17,7 +17,7 @@ class PetController{
   
   static Future<PetModel> getPet(String pet_id) async {
     String user_id = await DataStorage.getData('id');
-    DocumentSnapshot user_pet = await firestore.collection('users').doc(user_id).collection('pets').doc(pet_id).get();
+    DocumentSnapshot user_pet = await firestore.collection('pets').doc(pet_id).get();
     PetModel pet = PetModel.fromMap(jsonDecode(jsonEncode(user_pet.data())));
     return pet;
   }
@@ -25,7 +25,7 @@ class PetController{
   static Future<List<PetModel>> getPetList() async {
     List<PetModel> pets = [];
     String user_id = await DataStorage.getData('id');
-    QuerySnapshot user_pets = await firestore.collection('users').doc(user_id).collection('pets').get();
+    QuerySnapshot user_pets = await firestore.collection('pets').where('user_id',isEqualTo: user_id).get();
     user_pets.docs.forEach((pet) {
       PetModel _pet = PetModel.fromMap(jsonDecode(jsonEncode(pet.data())));  
       pets.add(_pet);
@@ -46,9 +46,10 @@ class PetController{
   
   static Future<PetModel> insertPet(List<TextEditingController> data) async {
     String user_id = await DataStorage.getData('id');
-    CollectionReference pet_list = await firestore.collection('users').doc(user_id).collection('pets');
+    CollectionReference pet_list = await firestore.collection('pets');
     PetModel pet = PetModel(
                       "", 
+                      user_id, 
                       data[0].value.text.toString(),
                       data[1].value.text.toString(),
                       data[2].value.text.toString(),
@@ -76,16 +77,21 @@ class PetController{
 
   static Future<PetModel> updatePet(PetModel pet) async {
     String user_id = await DataStorage.getData('id');
-    DocumentReference pet_doc = await firestore.collection('users').doc(user_id).collection('pets').doc(pet.id);
+    DocumentReference pet_doc = await firestore.collection('pets').doc(pet.id);
     pet_doc.set(pet.toMap());
     return pet;
   }
   
-  static Future<PetModel> removePet(PetModel pet) async {
-    String user_id = await DataStorage.getData('id');
-    DocumentReference pet_doc = await firestore.collection('users').doc(user_id).collection('pets').doc(pet.id);
-    pet_doc.delete();
-    return pet;
+  static Future<bool> removePet(PetModel pet) async {
+    try{
+      String user_id = await DataStorage.getData('id');
+      DocumentReference pet_doc = await firestore.collection('pets').doc(pet.id);
+      pet_doc.delete();
+      return true;
+    }catch(e){
+      debugPrint("Error on: ${e.toString()}");
+      return false;
+    }
   }
 
 }
