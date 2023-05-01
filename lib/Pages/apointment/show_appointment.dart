@@ -47,7 +47,6 @@ class _ShowAppointmentState extends State<ShowAppointment> {
   }
 
   initLoadData() async {
-    print(apointment?.clinic_id??"");
     ClinicModel _clinic = await ClinicController.getClinic(apointment?.clinic_id??"");
     apointment?.pet_list_ids?.forEach((id) async {
       PetModel pet = await PetController.getPet(id);

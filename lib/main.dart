@@ -1,6 +1,9 @@
 // ignore_for_file: prefer_const_constructors
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:face_camera/face_camera.dart';
+import 'package:fast_cached_network_image/fast_cached_network_image.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:vetfindapp/Pages/LoadingScreen/LoadingScreen.dart';
 import 'package:vetfindapp/Pages/apointment/apointmets.dart';
@@ -18,10 +21,36 @@ import 'package:vetfindapp/Pages/profile/user_profile.dart';
 import 'package:vetfindapp/Pages/register/register.dart';
 import 'package:vetfindapp/Style/_custom_color.dart';
 
+Future<void> backgroundHandler(RemoteMessage message) async {
+  String? title = message.notification!.title;
+  String? body = message.notification!.body;
+
+  await Firebase.initializeApp();
+  AwesomeNotifications().createNotification(
+    content: NotificationContent(
+      id: 123, 
+      channelKey: 'notification',
+      title: title,
+      body: body,
+      category: NotificationCategory.Message,
+      wakeUpScreen: true,
+      fullScreenIntent: true,
+      backgroundColor: secondaryColor
+    ),
+    actionButtons: [
+      NotificationActionButton(key: 'open', label: 'OPEN',color: primaryColor),
+      NotificationActionButton(key: 'close', label: 'CLOSE',color: primaryColor)
+    ]
+  );
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); 
   await FaceCamera.initialize(); 
-  Firebase.initializeApp(); 
+  await Firebase.initializeApp(); 
+  FirebaseMessaging.onBackgroundMessage(backgroundHandler);
+  await FastCachedImageConfig.init(clearCacheAfter: const Duration(days: 15));
+  // print(await FirebaseMessaging.instance.getToken());
   runApp(const MyApp());
 }
 

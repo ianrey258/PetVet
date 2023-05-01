@@ -56,6 +56,10 @@ dependencies:
   image_picker: ^0.8.6+3
   firebase_core: ^2.7.0
   firebase_storage: ^11.0.14
+  fast_cached_network_image: ^1.1.1
+  firebase_messaging: ^14.4.1
+  awesome_notifications: ^0.6.21
+  shimmer: ^2.0.0
 
 dev_dependencies:
   flutter_test:

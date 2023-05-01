@@ -142,8 +142,8 @@ class ClinicService{
     ];
   }
   
-  static List<ClinicService> getListClinicServices(List services){
-    return services.reduce((listData,data)=>ClinicService(name: data));
+  static List<ClinicService> getListClinicServices(List<String> services){
+    return services.map((data)=>ClinicService(name: data)).toList();
   }
 }
 class ClinicModel{

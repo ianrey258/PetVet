@@ -32,7 +32,23 @@ class ClinicController{
       return _clinic;
     }catch (e){
       debugPrint("Error on: ${e.toString()}");
-      return {} as ClinicModel;
+      return ClinicModel(id, '', '', '', '', '', '', '', '', '', []);
+    }
+  }
+  
+  static Future<List<String>> getClinicServices() async {
+    List<String> services = [];
+    try{
+      QuerySnapshot clinics = await firestore.collection('clinics').get();
+      clinics.docs.forEach((doc) { 
+        List clinic_services = doc.get('services');
+        List<String> clinic_services_decode = clinic_services.map((data) => data as String).toList();
+        services += clinic_services_decode;
+      });
+      return services.toSet().toList();
+    }catch (e){
+      debugPrint("Error on: ${e.toString()}");
+      return services;
     }
   }
 

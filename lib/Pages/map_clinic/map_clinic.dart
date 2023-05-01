@@ -27,8 +27,9 @@ class _MapClinicState extends State<MapClinic> {
   final _mapController = MapController();
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<TextEditingController> text = [];
-  List<AnimalData>? selectedAnimalCategory = [];
+  // List<AnimalData>? selectedAnimalCategory = [];
   List<ClinicService>? selectedClinicServices = [];
+  List<ClinicService>? filterClinicServices = [];
   LatLng _currentlatlng = LatLng(0, 0);
   ClinicModel? clinic;
   List<ClinicModel>? Clinics;
@@ -57,9 +58,14 @@ class _MapClinicState extends State<MapClinic> {
   }
 
   initLoadData()async {
-    List clinic_list = await ClinicController.getClinics(); 
+    List clinic_list = await ClinicController.getClinics();
+    List<String> clinic_services = await ClinicController.getClinicServices();
     setState(() {
       Clinics = clinic_list as List<ClinicModel>;
+      filterClinicServices = ClinicService.getListClinicServices(clinic_services);
+      if(filterClinicServices!.isEmpty){
+        filterClinicServices = ClinicService.getSampleServices();
+      }
     });
   }
 
@@ -75,11 +81,13 @@ class _MapClinicState extends State<MapClinic> {
     Future.delayed(Duration(seconds: 1),()async {
       Position position = await GeolocationModule.getPosition();
       LatLng _storelatlng = LatLng(double.parse(clinic!.clinic_lat??"0"),double.parse(clinic!.clinic_long??"0"));
-
+      List<LatLng> list_points = await GeolocationModule.getListRoutes(position.longitude.toString(),position.latitude.toString(), clinic!.clinic_long??"0" ,clinic!.clinic_lat??"0");
+      print(list_points);
       setState(() {
         _currentlatlng = LatLng(position.latitude, position.longitude);
         _mapController.move(_storelatlng, zoom);
-        _points = [_currentlatlng,_storelatlng];
+        // _points = [_currentlatlng,_storelatlng];
+        _points = list_points;
       });
     });
   }
@@ -159,59 +167,62 @@ class _MapClinicState extends State<MapClinic> {
     );
   }
 
-  Widget filterCategory(){
-    return FilterListWidget(
-      themeData: FilterListThemeData(
-        context,
-        backgroundColor: secondaryColor,
-        controlButtonBarTheme: ControlButtonBarThemeData(
-          context,
-          backgroundColor: text0Color
-          )
-      ),
-      hideHeader: true,
-      listData: AnimalData.getSampleList(),
-      selectedListData: selectedAnimalCategory,
-      hideSearchField: true,
-      hideSelectedTextCount: true,
-      controlButtons: [],
-      validateSelectedItem: (selectedAnimalCategory,selected){
-        return selectedAnimalCategory!.contains(selected);
-      }, 
-      choiceChipLabel: (item){
-        return item!.name;
-      }, 
-      onItemSearch: (data,item){
-        return true;
-      },
-      applyButtonText: 'Set',
-      onApplyButtonClick: (list){
-        selectedAnimalCategory = list;
-        CherryToast.info(
-          title: Text('Category Set',textAlign: TextAlign.center,),
-          animationDuration: Duration(milliseconds: 500),
-          toastDuration: Duration(milliseconds: 1000),
-          displayCloseButton: false,
-          toastPosition: ct_res.Position.bottom,
-        ).show(context);
-      },
-    );
-  }
+  // Widget filterCategory(){
+  //   return FilterListWidget(
+  //     themeData: FilterListThemeData(
+  //       context,
+  //       backgroundColor: secondaryColor,
+  //       controlButtonBarTheme: ControlButtonBarThemeData(
+  //         context,
+  //         backgroundColor: text0Color
+  //         )
+  //     ),
+  //     hideHeader: true,
+  //     listData: AnimalData.getSampleList(),
+  //     selectedListData: selectedAnimalCategory,
+  //     hideSearchField: true,
+  //     hideSelectedTextCount: true,
+  //     controlButtons: [],
+  //     validateSelectedItem: (selectedAnimalCategory,selected){
+  //       return selectedAnimalCategory!.contains(selected);
+  //     }, 
+  //     choiceChipLabel: (item){
+  //       return item!.name;
+  //     }, 
+  //     onItemSearch: (data,item){
+  //       return true;
+  //     },
+  //     applyButtonText: 'Set',
+  //     onApplyButtonClick: (list){
+  //       selectedAnimalCategory = list;
+  //       CherryToast.info(
+  //         title: Text('Category Set',textAlign: TextAlign.center,),
+  //         animationDuration: Duration(milliseconds: 500),
+  //         toastDuration: Duration(milliseconds: 1000),
+  //         displayCloseButton: false,
+  //         toastPosition: ct_res.Position.bottom,
+  //       ).show(context);
+  //     },
+  //   );
+  // }
   
   Widget filterServices(){
     return FilterListWidget(
       themeData: FilterListThemeData(
         context,
         backgroundColor: secondaryColor,
+        headerTheme: HeaderThemeData(
+          headerTextStyle: TextStyle(color: text1Color,fontSize: 20, fontWeight: FontWeight.bold),
+          backgroundColor: secondaryColor
+        ),
         controlButtonBarTheme: ControlButtonBarThemeData(
           context,
           backgroundColor: text0Color
           )
       ),
-      hideHeader: true,
-      listData: ClinicService.getSampleServices(),
+      listData: filterClinicServices,
+      headlineText: 'Find Services',
       selectedListData: selectedClinicServices,
-      hideSearchField: true,
       hideSelectedTextCount: true,
       controlButtons: [],
       validateSelectedItem: (selectedClinicServices,selected){
@@ -220,10 +231,11 @@ class _MapClinicState extends State<MapClinic> {
       choiceChipLabel: (item){
         return item!.name;
       }, 
-      onItemSearch: (data,item){
-        return true;
+      onItemSearch: (item,search){
+        return item.name?.toLowerCase().contains(search)??false ? true : item.name?.contains(search)??false;
       },
-      applyButtonText: 'Apply and Search',
+      // resetButtonText: 'Reset',
+      applyButtonText: 'Search',
       onApplyButtonClick: (list){
         _points = [];
         selectedClinicServices = list;
@@ -240,42 +252,42 @@ class _MapClinicState extends State<MapClinic> {
     );
   }
 
-  Widget drawerContainer(){
+  Widget drawerContainer(Size size){
     return ListView(
       children: [        
-        SizedBox(
-          height: 75,
-          child: searchBox()
-        ),
+        // SizedBox(
+        //   height: 75,
+        //   child: searchBox()
+        // ),
         Divider(
           height: 5,
         ),
+        // SizedBox(
+        //   height: 25,
+        //   child: Padding(
+        //     padding: const EdgeInsets.only(left: 10),
+        //     child: Text('Category',style: TextStyle(fontSize: 18),),
+        //   )
+        // ),
+        // SizedBox(
+        //   height: 260,
+        //   child: Container(
+        //     padding: const EdgeInsets.only(left: 10,right: 10),
+        //     child: filterCategory(),
+        //   )
+        // ),
+        // Divider(
+        //   height: 5,
+        // ),
+        // SizedBox(
+        //   height: 25,
+        //   child: Padding(
+        //     padding: const EdgeInsets.only(left: 10),
+        //     child: Text('Services',style: TextStyle(fontSize: 18),),
+        //   )
+        // ),
         SizedBox(
-          height: 25,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child: Text('Category',style: TextStyle(fontSize: 18),),
-          )
-        ),
-        SizedBox(
-          height: 260,
-          child: Container(
-            padding: const EdgeInsets.only(left: 10,right: 10),
-            child: filterCategory(),
-          )
-        ),
-        Divider(
-          height: 5,
-        ),
-        SizedBox(
-          height: 25,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child: Text('Services',style: TextStyle(fontSize: 18),),
-          )
-        ),
-        SizedBox(
-          height: 420,
+          height: size.height*0.9,
           child: Container(
             padding: const EdgeInsets.only(left: 10,right: 10),
             child: filterServices(),
@@ -287,7 +299,7 @@ class _MapClinicState extends State<MapClinic> {
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
+    Size size = MediaQuery.of(context).size;
 
     return SafeArea(
       child: Scaffold(
@@ -300,7 +312,7 @@ class _MapClinicState extends State<MapClinic> {
           actions: [
             IconButton(
               onPressed: (){
-                selectedAnimalCategory = [];
+                // selectedAnimalCategory = [];
                 selectedClinicServices = [];
                 _scaffoldKey.currentState?.openEndDrawer();
               }, 
@@ -327,10 +339,9 @@ class _MapClinicState extends State<MapClinic> {
               polylines: [
                 Polyline(
                   useStrokeWidthInMeter: false,
-                  isDotted: true,
                   points: _points,
-                  strokeWidth: 4,
-                  color: text8Color
+                  strokeWidth: 5,
+                  color: primaryColor
                 ),
               ],
             ),
@@ -358,7 +369,7 @@ class _MapClinicState extends State<MapClinic> {
           width: size.width*.7,
           // backgroundColor: alternativeColor,
           backgroundColor:  secondaryColor,
-          child: drawerContainer(),
+          child: drawerContainer(size),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: (){

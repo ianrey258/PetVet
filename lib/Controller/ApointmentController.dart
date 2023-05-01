@@ -70,5 +70,24 @@ class ApointmentController{
       return false;
     }
   }
+
+  static Future<List<DateTime>> getClinicAppointmentSchedule(clinic_id) async {
+    List<DateTime> schedules = [];
+    try{
+      print(clinic_id);
+      QuerySnapshot appointments = await firestore.collection('appointments')
+                                                  .where('clinic_id',isEqualTo: clinic_id)
+                                                  .where('status', isEqualTo: 'Approved')
+                                                  .get();
+      appointments.docs.forEach((doc) { 
+        String schedule_datetime = doc.get('schedule_datetime');
+        schedules.add(DateTime.parse(schedule_datetime));
+      });
+      return schedules;
+    }catch (e){
+      debugPrint("Error on: ${e.toString()}");
+      return schedules;
+    }
+  }
   
 }

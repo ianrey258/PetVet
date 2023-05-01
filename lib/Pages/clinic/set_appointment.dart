@@ -33,6 +33,7 @@ class _SetAppointmentState extends State<SetAppointment> {
   List<String> status = ['Pending','Approved','Declined'];
   List<String> selected_pets = [];
   List<PetModel> pets = [];
+  List<DateTime> clinic_schedule = [];
   final datetime_format = DateFormat("yyyy-MM-dd HH:mm");
 
   @override
@@ -48,7 +49,9 @@ class _SetAppointmentState extends State<SetAppointment> {
 
   initLoadData() async {
     List<PetModel> pet_list = await PetController.getPetList();
+    List<DateTime> _clinic_schedule = await ApointmentController.getClinicAppointmentSchedule(clinic?.id??"");
     setState(() {
+      clinic_schedule = _clinic_schedule;
       pets = pet_list;
       apointment = ClinicApointmentModel("","","","","","","","",[]);
     });
@@ -72,6 +75,24 @@ class _SetAppointmentState extends State<SetAppointment> {
       return true;
     }
     return false;
+  }
+
+  bool checkConflictSchedule(DateTime datetime_appoint){
+    bool is_conflict = false;
+    clinic_schedule.forEach((DateTime datetime) { 
+      DateTime datetime_appoint_start = datetime_appoint;
+      DateTime datetime_appoint_end = datetime_appoint_start.add(Duration(minutes: 30));
+      DateTime datetime_start = datetime;
+      DateTime datetime_end = datetime_start.add(Duration(minutes: 30));
+      if(!is_conflict && datetime_start.microsecondsSinceEpoch <= datetime_appoint.microsecondsSinceEpoch && datetime_appoint.microsecondsSinceEpoch <= datetime_end.microsecondsSinceEpoch){
+        is_conflict = !is_conflict;
+      }
+      if(!is_conflict && datetime_appoint_start.microsecondsSinceEpoch <= datetime_start.microsecondsSinceEpoch && datetime_start.microsecondsSinceEpoch <= datetime_appoint_end.microsecondsSinceEpoch){
+        is_conflict = !is_conflict;
+      }
+    });
+    
+    return is_conflict;
   }
 
   Future<bool> afterValidation() async {
@@ -239,8 +260,8 @@ class _SetAppointmentState extends State<SetAppointment> {
           ),
           RadioListTile(
             contentPadding: EdgeInsets.all(0),
-            title: Text('Payment on Clinic',style: TextStyle(color: text2Color),),
-            value: 'Payment on Clinic', 
+            title: Text('Over The Counter',style: TextStyle(color: text2Color),),
+            value: 'Over The Counter', 
             groupValue: payment, 
             onChanged: (value){
               setState(() {
@@ -310,6 +331,15 @@ class _SetAppointmentState extends State<SetAppointment> {
         ),
         TextButton(
           onPressed: () async {
+            if(checkConflictSchedule(DateTime.parse(schedule))){
+              print(schedule);
+              return CherryToast.error(
+                title: Text('Schedule not available!'),
+                toastPosition: Position.bottom,
+                displayCloseButton: false,
+                animationType: AnimationType.fromRight,
+              ).show(context); 
+            }
             if(!await validation()){
               return CherryToast.error(
                 title: Text('Error Input!'),
@@ -318,7 +348,7 @@ class _SetAppointmentState extends State<SetAppointment> {
                 animationType: AnimationType.fromRight,
               ).show(context); 
             }
-            if(! await afterValidation()){
+            if(!await afterValidation()){
               return CherryToast.error(
                 title: Text('Set Appointment on Error!'),
                 toastPosition: Position.bottom,
