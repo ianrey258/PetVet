@@ -10,7 +10,9 @@ import 'package:vetfindapp/Model/apointmentModel.dart';
 import 'package:vetfindapp/Model/clinicModel.dart';
 import 'package:vetfindapp/Model/petModel.dart';
 import 'package:vetfindapp/Pages/_helper/image_loader.dart';
+import 'package:vetfindapp/Services/firebase_messaging.dart';
 import 'package:vetfindapp/Style/library_style_and_constant.dart';
+import 'package:vetfindapp/Utils/SharedPreferences.dart';
 
 
 class SetAppointment extends StatefulWidget {
@@ -53,7 +55,7 @@ class _SetAppointmentState extends State<SetAppointment> {
     setState(() {
       clinic_schedule = _clinic_schedule;
       pets = pet_list;
-      apointment = ClinicApointmentModel("","","","","","","","",[]);
+      apointment = ClinicApointmentModel("","","","","","","","",[],"","");
     });
   }
 
@@ -71,10 +73,16 @@ class _SetAppointmentState extends State<SetAppointment> {
         apointment?.status = status[0];
         apointment?.pet_list_ids = selected_pets;
         apointment?.payment = payment;
+        apointment?.pet_owner_read_status = "true";
+        apointment?.clinic_read_status = "false";
       });
       return true;
     }
     return false;
+  }
+
+  Future sendNotification() async {
+    
   }
 
   bool checkConflictSchedule(DateTime datetime_appoint){
@@ -247,17 +255,17 @@ class _SetAppointmentState extends State<SetAppointment> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          RadioListTile(
-            contentPadding: EdgeInsets.all(0),
-            title: Text('Gcash',style: TextStyle(color: text2Color),),
-            value: 'Gcash', 
-            groupValue: payment, 
-            onChanged: (value){
-              setState(() {
-                payment = value!;
-              });
-            }
-          ),
+          // RadioListTile(
+          //   contentPadding: EdgeInsets.all(0),
+          //   title: Text('Gcash',style: TextStyle(color: text2Color),),
+          //   value: 'Gcash', 
+          //   groupValue: payment, 
+          //   onChanged: (value){
+          //     setState(() {
+          //       payment = value!;
+          //     });
+          //   }
+          // ),
           RadioListTile(
             contentPadding: EdgeInsets.all(0),
             title: Text('Over The Counter',style: TextStyle(color: text2Color),),
@@ -331,18 +339,17 @@ class _SetAppointmentState extends State<SetAppointment> {
         ),
         TextButton(
           onPressed: () async {
-            if(checkConflictSchedule(DateTime.parse(schedule))){
-              print(schedule);
+            if(!await validation()){
               return CherryToast.error(
-                title: Text('Schedule not available!'),
+                title: Text('Error Input!'),
                 toastPosition: Position.bottom,
                 displayCloseButton: false,
                 animationType: AnimationType.fromRight,
               ).show(context); 
             }
-            if(!await validation()){
+            if(checkConflictSchedule(DateTime.parse(schedule))){
               return CherryToast.error(
-                title: Text('Error Input!'),
+                title: Text('Schedule not available!'),
                 toastPosition: Position.bottom,
                 displayCloseButton: false,
                 animationType: AnimationType.fromRight,
@@ -356,6 +363,7 @@ class _SetAppointmentState extends State<SetAppointment> {
                 animationType: AnimationType.fromRight,
               ).show(context); 
             }
+            FirebaseMessagingService.sendMessageNotification('Appointment', await DataStorage.getData('username'), 'Pet Apointment', apointment?.reason??'', clinic!.fcm_tokens);
             Navigator.pop(context);
             CherryToast.success(
               title: Text('Set Appointment Successfuly!'),

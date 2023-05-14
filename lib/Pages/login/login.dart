@@ -32,6 +32,7 @@ class _LoginState extends State<Login> {
         text.add(TextEditingController());
       }
     });
+    UserController.logoutUser();
   }
 
   validation() async {
@@ -39,7 +40,7 @@ class _LoginState extends State<Login> {
       _key.currentState!.save();
       LoadingScreen1.showLoadingNoMsg(context);
       try {
-        var result = await UserController.loginUser(text);
+        var result = await UserController.verifyUser(text);
         return result;
       } catch (e) {
         return false;
@@ -112,7 +113,7 @@ class _LoginState extends State<Login> {
         if(_key.currentState!.validate()){
           if(await validation()){
             Navigator.pop(context);
-            Navigator.popAndPushNamed(context, '/dashboard');
+            Navigator.pushNamed(context, '/otp', arguments: text);
           }else{
             Navigator.pop(context);
             CherryToast.error(title: Text("Check Username/Password!", style: TextStyle(fontSize: 12),),).show(context);

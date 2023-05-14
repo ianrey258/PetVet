@@ -1,4 +1,5 @@
 // ignore_for_file: prefer_const_constructors
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:vetfindapp/Controller/UserController.dart';
 import 'package:vetfindapp/Model/clinicModel.dart';
 import 'package:vetfindapp/Model/userModel.dart';
 import 'package:vetfindapp/Pages/_helper/image_loader.dart';
+import 'package:vetfindapp/Services/firebase_messaging.dart';
 import 'package:vetfindapp/Style/library_style_and_constant.dart';
 import 'package:vetfindapp/Utils/SharedPreferences.dart';
 
@@ -43,6 +45,9 @@ class _DashboardState extends State<Dashboard> {
         text.add(TextEditingController());
       }
     });
+    FirebaseMessagingService.initPermission();
+    FirebaseMessagingService.initListenerForground(context);
+    FirebaseMessagingService.awesomeNotificationButtonListener(context);
     initLoadData();
   }
 
@@ -52,7 +57,10 @@ class _DashboardState extends State<Dashboard> {
     List clinic_list = await ClinicController.getClinics(); 
     setState(() {
       user = user;
-      clinics = clinic_list as List<ClinicModel>;
+      clinics = [];
+      if(clinic_list.isNotEmpty){
+        clinics = clinic_list as List<ClinicModel>;
+      }
     });
   }
 
@@ -319,8 +327,8 @@ class _DashboardState extends State<Dashboard> {
               children: [
                 greetings(),
                 feeds(),
-                Text("Category",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: text2Color),),
-                categoryFilter(),
+                // Text("Category",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: text2Color),),
+                // categoryFilter(),
                 Text("Nearby Veterinary",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: text2Color),),
               ] 
               + vetClinics(),

@@ -54,9 +54,14 @@ class _ShowAppointmentState extends State<ShowAppointment> {
         pets.add(pet);
       });  
     });
+    if(apointment?.pet_owner_read_status == "" || apointment?.pet_owner_read_status == "false" || apointment?.pet_owner_read_status == null){
+      apointment?.pet_owner_read_status = 'true';
+      await ApointmentController.setApointment(apointment!);
+    }
     if(apointment != null){
       setState(() {
         clinic = _clinic;
+        apointment?.pet_owner_read_status = 'true';
         text[0].text = apointment?.reason??"";
         DateTime sched = DateTime.parse(apointment?.schedule_datetime??"");
         text[1].text = "${DateFormat.yMMMEd().add_jm().format(sched)}";

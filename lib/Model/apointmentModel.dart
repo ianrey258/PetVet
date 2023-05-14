@@ -1,5 +1,5 @@
 class ClinicApointmentModel{
-  String? id,pet_owner_id,clinic_id,schedule_datetime,datetime_created,reason,payment,status;
+  String? id,pet_owner_id,clinic_id,schedule_datetime,datetime_created,reason,payment,status,pet_owner_read_status,clinic_read_status;
   List? pet_list_ids;
 
   ClinicApointmentModel(
@@ -12,6 +12,8 @@ class ClinicApointmentModel{
     this.payment,
     this.status,
     this.pet_list_ids,
+    this.pet_owner_read_status,
+    this.clinic_read_status,
   );
 
   ClinicApointmentModel.fromMap(Map<String, dynamic> json):
@@ -23,7 +25,9 @@ class ClinicApointmentModel{
     reason = json['reason'],
     payment = json['payment'],
     status = json['status'],
-    pet_list_ids = json['pet_list_ids']
+    pet_list_ids = json['pet_list_ids'],
+    pet_owner_read_status = json['pet_owner_read_status'],
+    clinic_read_status = json['clinic_read_status']
     ;
 
   Map<String, dynamic> toMap() => {
@@ -36,6 +40,8 @@ class ClinicApointmentModel{
       "payment": payment,
       "status": status,
       "pet_list_ids": pet_list_ids as List,
+      "pet_owner_read_status": pet_owner_read_status,
+      "clinic_read_status": clinic_read_status,
     };
 }
 

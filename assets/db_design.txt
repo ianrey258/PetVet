@@ -4,6 +4,7 @@ Collection DB:
 - Pets
 - Apointments
 - RatingReviews
+- Chat
 
 Users:
 - email
@@ -13,6 +14,7 @@ Users:
 - birthdate
 - profile_img
 - auth_key
+- fcm_tokens
 
 Pets:
 - user_id
@@ -31,6 +33,7 @@ Clinics:
 - clinic_long
 - clinic_rating
 - services
+- fcm_tokens
 
 Apointments:
 - pet_owner_id
@@ -41,9 +44,23 @@ Apointments:
 - payment
 - status
 - pet_list_ids
+- pet_owner_read_status
+- clinic_read_status
 
 RatingReviews:
 - user_name
 - clinic_id
 - comment
 - rate
+
+Chat:
+- id
+- users_id
+- messages:{
+  - datetime
+  - id
+  - message
+  - type
+  - user_id
+  - read_status
+}

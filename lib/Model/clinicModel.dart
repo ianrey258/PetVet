@@ -148,7 +148,7 @@ class ClinicService{
 }
 class ClinicModel{
   String? id,clinic_name,clinic_doctor,clinic_email,clinic_address,clinic_img,clinic_img_banner,clinic_lat,clinic_long,clinic_rating;
-  List services;
+  List services,fcm_tokens;
 
   ClinicModel(
     this.id,
@@ -161,7 +161,8 @@ class ClinicModel{
     this.clinic_lat,
     this.clinic_long,
     this.clinic_rating,
-    this.services
+    this.services,
+    this.fcm_tokens,
   );
 
   ClinicModel.fromMap(Map<String, dynamic> json)
@@ -175,7 +176,8 @@ class ClinicModel{
         clinic_lat = json['clinic_lat'],
         clinic_long = json['clinic_long'],
         clinic_rating = json['clinic_rating'],
-        services = json['services'] as List
+        services = json['services'] as List,
+        fcm_tokens = json['fcm_tokens'] as List
     ;
 
   Map<String, dynamic> toMap() => {
@@ -189,7 +191,8 @@ class ClinicModel{
         "clinic_lat" : clinic_lat,
         "clinic_long" : clinic_long,
         "clinic_rating" : clinic_rating,
-        "services" : services
+        "services" : services,
+        "fcm_tokens" : fcm_tokens
       };
 }
 

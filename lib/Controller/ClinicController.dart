@@ -15,6 +15,7 @@ class ClinicController{
     try{
       List<ClinicModel> clinics = [];
       QuerySnapshot list_clinics = await firestore.collection('clinics').get();
+      print('Clinics = ${list_clinics.docs.length}');
       list_clinics.docs.forEach((clinic) { 
         clinics!.add(ClinicModel.fromMap(jsonDecode(jsonEncode(clinic.data()))));
       });
@@ -32,7 +33,7 @@ class ClinicController{
       return _clinic;
     }catch (e){
       debugPrint("Error on: ${e.toString()}");
-      return ClinicModel(id, '', '', '', '', '', '', '', '', '', []);
+      return ClinicModel(id, '', '', '', '', '', '', '', '', '', [],[]);
     }
   }
   
@@ -49,6 +50,24 @@ class ClinicController{
     }catch (e){
       debugPrint("Error on: ${e.toString()}");
       return services;
+    }
+  }
+
+  static Future<String> fixClinicsMissingData() async {
+    try{
+      QuerySnapshot clinics = await firestore.collection('clinics').get();
+      clinics.docs.forEach((doc)async{
+        Map clinic = jsonDecode(jsonEncode(doc.data()));
+        if(clinic['fcm_tokens'] == null){
+          clinic['fcm_tokens'] = [];
+          DocumentReference clinic_doc = await firestore.collection('clinics').doc(doc.id);
+          clinic_doc.set(clinic);
+        }
+      });
+      return 'Fix Sucess';
+    }catch (e){
+      debugPrint("Error on: ${e.toString()}");
+      return 'Fix Failed';
     }
   }
 

@@ -66,7 +66,7 @@ class _ApointmentsState extends State<Apointments> {
 
   Color statusColor(status){
     if(status == "Approved"){
-      return text9Color;
+      return text10Color;
     }
     if(status == "Declined"){
       return text4Color;
@@ -87,7 +87,7 @@ class _ApointmentsState extends State<Apointments> {
     return Card(
       elevation: 5,
       child: ListTile(
-        tileColor: statusColor(apointment?.status),
+        tileColor: apointment?.pet_owner_read_status == 'true' ? text3Color : text7Color,
         style: ListTileStyle.list,
         leading: clinic?.clinic_img != "" ? ImageLoader.loadImageNetwork(clinic?.clinic_img??"",50.0,50.0) : FaIcon(Icons.store,size: 50),
         title: Row(
@@ -97,7 +97,7 @@ class _ApointmentsState extends State<Apointments> {
             Text("${DateFormat.yMd().format(DateTime.parse(apointment?.schedule_datetime??""))}")
           ],
         ),
-        subtitle: Text(apointment?.status??""),
+        subtitle: Text(apointment?.status??"",style: TextStyle(color: statusColor(apointment?.status)),),
         trailing: Container(
           // width: 90,
           child: IconButton(

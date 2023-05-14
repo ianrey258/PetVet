@@ -9,6 +9,7 @@ import 'package:vetfindapp/Model/clinicModel.dart';
 import 'package:vetfindapp/Model/messageModel.dart';
 import 'package:vetfindapp/Model/userModel.dart';
 import 'package:vetfindapp/Pages/_helper/image_loader.dart';
+import 'package:vetfindapp/Services/firebase_messaging.dart';
 import 'package:vetfindapp/Style/library_style_and_constant.dart';
 import 'package:vetfindapp/Utils/SharedPreferences.dart';
 
@@ -57,6 +58,7 @@ class _MessageState extends State<Message> {
     if(text[0].text != ''){
       MessageModel message = MessageModel('', user?.id, text[0].text, 'text', DateTime.now().millisecondsSinceEpoch.toString());
       await MessageController.sendMessage(message_id?.id??"", message);
+      FirebaseMessagingService.sendMessageNotification('Appointment', "${await DataStorage.getData('username')}", 'Message', text[0].text, clinic!.fcm_tokens!);
       _sc.animateTo(0,duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
     }
     text[0].clear();

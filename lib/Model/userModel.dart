@@ -1,5 +1,6 @@
 class UserModel{
   String? id,username,fullname,address,email,password,birthdate,profile_img,auth_key;
+  List? fcm_tokens;
 
   UserModel(
     this.id,
@@ -11,6 +12,7 @@ class UserModel{
     this.birthdate,
     this.profile_img,
     this.auth_key,
+    this.fcm_tokens,
   );
 
   UserModel.fromMap(Map<String, dynamic> json)
@@ -22,7 +24,8 @@ class UserModel{
         password = json['password'],
         birthdate = json['birthdate'],
         profile_img = json['profile_img'],
-        auth_key = json['auth_key']
+        auth_key = json['auth_key'],
+        fcm_tokens = json['fcm_tokens']
     ;
 
   Map<String, dynamic> toMap() => {
@@ -35,6 +38,7 @@ class UserModel{
         "birthdate": birthdate,
         "profile_img": profile_img,
         "auth_key": auth_key,
+        "fcm_tokens": fcm_tokens,
       };
 
 }

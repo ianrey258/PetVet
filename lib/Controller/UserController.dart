@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:vetfindapp/Controller/FileController.dart';
 import 'package:vetfindapp/Model/userModel.dart';
+import 'package:vetfindapp/Services/firebase_messaging.dart';
 import 'package:vetfindapp/Utils/SharedPreferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,22 +14,34 @@ class UserController{
   static final FirebaseAuth firabaseAuth = FirebaseAuth.instance;
   static FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  static loginUser(List<TextEditingController> data) async {
+  static verifyUser(List<TextEditingController> data) async {
     try{
       UserCredential fb_auth = await firabaseAuth.signInWithEmailAndPassword(email: data[0].value.text.toString().toLowerCase(), password: data[1].value.text.toString());
       if(!await isInEmail(data[0].value.text.toString().toLowerCase())){
         return false;
       }
+      return true;
+    }catch(e){
+      debugPrint("on Error: ${e.toString()}");
+      return false;
+    }
+  }
+  
+  static loginUser(List<TextEditingController> data) async {
+    try{
+      UserCredential fb_auth = await firabaseAuth.signInWithEmailAndPassword(email: data[0].value.text.toString().toLowerCase(), password: data[1].value.text.toString());
       await DataStorage.setData('email', data[0].value.text.toString().toLowerCase());
       DocumentSnapshot user_doc = await firestore.collection('users').doc(fb_auth.user?.uid??"").get();
       UserModel user = UserModel.fromMap(jsonDecode(jsonEncode(user_doc.data())));
+      
+      await checkUserFCMToken(user);
       await DataStorage.setData('id', user.id);
       await DataStorage.setData('username',user.username);
       await DataStorage.setData('fullname',user.fullname);
       await DataStorage.setData('email',user.email);
       return true;
     }catch(e){
-      debugPrint(e.toString());
+      debugPrint("on Error: ${e.toString()}");
       return false;
     }
   }
@@ -37,6 +50,7 @@ class UserController{
     try{
       UserCredential fb_auth = await firabaseAuth.createUserWithEmailAndPassword(email: data[2].value.text.toString(), password: data[3].value.text.toString());
       DocumentReference users = firestore.collection('users').doc(fb_auth.user?.uid??"");
+      List fcm_tokens = [await FirebaseMessagingService.getFCMToken()];
       UserModel user = UserModel(
                           fb_auth.user?.uid??"", 
                           data[0].value.text.toString(), 
@@ -46,7 +60,8 @@ class UserController{
                           data[3].value.text.toString(),
                           "",
                           "",
-                          fb_auth.user?.uid??""
+                          fb_auth.user?.uid??"",
+                          fcm_tokens
                         );
       await updateUser(user);
       await DataStorage.setData('id', user.id);
@@ -153,6 +168,16 @@ class UserController{
       debugPrint(e.toString());
       return false;
     }
+  }
+
+  static Future checkUserFCMToken(UserModel user) async {
+    //check fcm tokens
+      List fcm_tokens = user.fcm_tokens??[];
+      String device_fcm_token = await FirebaseMessagingService.getFCMToken();
+      if(!fcm_tokens.contains(device_fcm_token)){
+        user.fcm_tokens = fcm_tokens + [device_fcm_token];
+        await updateUser(user);
+      }
   }
 
   static updateDeviceFirestore(data) async {
