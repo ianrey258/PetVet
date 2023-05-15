@@ -341,7 +341,7 @@ class _SetAppointmentState extends State<SetAppointment> {
           onPressed: () async {
             if(!await validation()){
               return CherryToast.error(
-                title: Text('Error Input!'),
+                title: Text('Enter your pets or set schedule!'),
                 toastPosition: Position.bottom,
                 displayCloseButton: false,
                 animationType: AnimationType.fromRight,
