@@ -6,14 +6,17 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:banner_carousel/banner_carousel.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smooth_star_rating_null_safety/smooth_star_rating_null_safety.dart';
+import 'package:vetfindapp/Controller/ApointmentController.dart';
 import 'package:vetfindapp/Controller/UserController.dart';
 import 'package:vetfindapp/Model/clinicModel.dart';
 import 'package:vetfindapp/Model/userModel.dart';
 import 'package:vetfindapp/Pages/_helper/image_loader.dart';
 import 'package:vetfindapp/Pages/clinic/set_appointment.dart';
 import 'package:vetfindapp/Pages/clinic/set_rating.dart';
+import 'package:vetfindapp/Services/firebase_messaging.dart';
 import 'package:vetfindapp/Style/library_style_and_constant.dart';
 import 'package:vetfindapp/Utils/SharedPreferences.dart';
+import 'package:badges/badges.dart' as badges;
 
 class VetClinic extends StatefulWidget {
   final ClinicData? data;
@@ -25,6 +28,7 @@ class VetClinic extends StatefulWidget {
 
 class _VetClinicState extends State<VetClinic> {
   List<TextEditingController> text = [];
+  int unread_appointment = 0;
   final _key = GlobalKey<FormState>();
   ClinicModel? clinic;
   UserModel? user;
@@ -40,7 +44,11 @@ class _VetClinicState extends State<VetClinic> {
         text.add(TextEditingController());
       }
     });
+    FirebaseMessagingService.initPermission();
+    FirebaseMessagingService.initListenerForground(context);
+    FirebaseMessagingService.awesomeNotificationButtonListener(context);
     initLoadData();
+    setUnreadApointmentBadge();
   }
 
   initLoadData()async {
@@ -65,6 +73,15 @@ class _VetClinicState extends State<VetClinic> {
     return false;
   }
 
+  Future setUnreadApointmentBadge() async {
+    List user_appointment_list = await ApointmentController.getUnreadApointments()??[];
+    if(unread_appointment != user_appointment_list.length){
+      setState(() {
+        unread_appointment = user_appointment_list.length;
+      });
+    }
+  }
+
   logout(){
     UserController.logoutUser();
     Navigator.popAndPushNamed(context,'/loading_screen');
@@ -87,15 +104,23 @@ class _VetClinicState extends State<VetClinic> {
   Widget drawerContainerItem(icon,text){
     return ListTile(
       leading: FaIcon(icon,size: 25,color: text1Color,),
-      title: Center(
-        child: Text(text,style: TextStyle(fontSize: 25),),
-      ),
+      title: "Apointments" == text && unread_appointment != 0 ? Container(
+        child: badges.Badge(
+          position: badges.BadgePosition.topEnd(top: -10, end: -12),
+          showBadge: true,
+          ignorePointer: false,
+          onTap: () {},
+          badgeContent: Text(unread_appointment.toString()),
+          child: Text(text,style: TextStyle(fontSize: 25),),
+        ), 
+      ) : Text(text,style: TextStyle(fontSize: 25),),
       trailing: Icon(Icons.arrow_forward_ios_sharp,color: text1Color,),
       onTap: (){
         Navigator.pop(context);
         text == "Home" ? Navigator.popAndPushNamed(context,'/dashboard')
         : text == "Map" ? Navigator.pushNamed(context, '/map_clinic')
         : text == "Apointments" ? Navigator.pushNamed(context, '/apointments')
+        : text == "Messages" ? Navigator.pushNamed(context, '/messages')
         : text == "Pets" ? Navigator.pushNamed(context, '/pets')
         : text == "History" ? ''
         : text == "Settings" ? ''
@@ -146,6 +171,7 @@ class _VetClinicState extends State<VetClinic> {
         drawerContainerItem(Icons.home,'Home'),
         drawerContainerItem(FontAwesomeIcons.mapLocationDot,'Map'),
         drawerContainerItem(FontAwesomeIcons.objectGroup,'Apointments'),
+        drawerContainerItem(FontAwesomeIcons.message,'Messages'),
         drawerContainerItem(Icons.pets,'Pets'),
         drawerContainerItem(Icons.history,'History'),
         drawerContainerItem(FontAwesomeIcons.userGear,'Settings'),

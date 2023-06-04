@@ -13,15 +13,15 @@ import 'package:vetfindapp/Services/firebase_messaging.dart';
 import 'package:vetfindapp/Style/library_style_and_constant.dart';
 import 'package:vetfindapp/Utils/SharedPreferences.dart';
 
-class Message extends StatefulWidget {
+class MessageChat extends StatefulWidget {
   final ClinicModel? data;
-  const Message({Key? key,this.data}) : super(key: key);
+  const MessageChat({Key? key,this.data}) : super(key: key);
 
   @override
-  _MessageState createState() => _MessageState();
+  _MessageChatState createState() => _MessageChatState();
 }
 
-class _MessageState extends State<Message> {
+class _MessageChatState extends State<MessageChat> {
   final ScrollController _sc = ScrollController();
   List<TextEditingController> text = [];
   final _key = GlobalKey<FormState>();
@@ -58,7 +58,7 @@ class _MessageState extends State<Message> {
     if(text[0].text != ''){
       MessageModel message = MessageModel('', user?.id, text[0].text, 'text', DateTime.now().millisecondsSinceEpoch.toString());
       await MessageController.sendMessage(message_id?.id??"", message);
-      FirebaseMessagingService.sendMessageNotification('Appointment', "${await DataStorage.getData('username')}", 'Message', text[0].text, clinic!.fcm_tokens!);
+      FirebaseMessagingService.sendMessageNotification(notification_type[0], "${await DataStorage.getData('username')}", 'Message', text[0].text, clinic!.fcm_tokens!,user!.toMap());
       _sc.animateTo(0,duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
     }
     text[0].clear();

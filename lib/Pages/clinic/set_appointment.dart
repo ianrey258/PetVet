@@ -72,7 +72,7 @@ class _SetAppointmentState extends State<SetAppointment> {
         apointment?.schedule_datetime = schedule;
         apointment?.status = status[0];
         apointment?.pet_list_ids = selected_pets;
-        apointment?.payment = payment;
+        apointment?.payment = payment.isEmpty ? 'Over The Counter' : payment;
         apointment?.pet_owner_read_status = "true";
         apointment?.clinic_read_status = "false";
       });
@@ -363,7 +363,7 @@ class _SetAppointmentState extends State<SetAppointment> {
                 animationType: AnimationType.fromRight,
               ).show(context); 
             }
-            FirebaseMessagingService.sendMessageNotification('Appointment', await DataStorage.getData('username'), 'Pet Apointment', apointment?.reason??'', clinic!.fcm_tokens);
+            FirebaseMessagingService.sendMessageNotification(notification_type[1], await DataStorage.getData('username'), 'Pet Apointment', apointment?.reason??'', clinic!.fcm_tokens,{});
             Navigator.pop(context);
             CherryToast.success(
               title: Text('Set Appointment Successfuly!'),

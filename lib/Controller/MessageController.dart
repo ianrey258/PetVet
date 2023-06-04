@@ -62,6 +62,21 @@ class MessageController{
     // }
   }
 
+  static Future<List> getListMessages() async {
+    List clinic_list_ids = [];
+    String user_id = await DataStorage.getData('id');
+    QuerySnapshot _chat = await firestore.collection('chat').get();
+    _chat.docs.forEach((QueryDocumentSnapshot doc) async { 
+      MessageIdModel _message_model = MessageIdModel.fromMap(jsonDecode(jsonEncode(doc.data()))); 
+      if(_message_model.users_id!.contains(user_id)){
+        _message_model.users_id!.remove(user_id);
+        String clinic_id = _message_model.users_id![0].toString();
+        clinic_list_ids.add(clinic_id);
+      }
+    });
+    return clinic_list_ids;
+  }
+
 
   static Future<List> getMessages(String group_id,int limit) async {
     try{

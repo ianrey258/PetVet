@@ -38,6 +38,7 @@ class _ApointmentsState extends State<Apointments> {
   }
 
   initLoadData() async {
+    apointments = [];
     List _apointments = await ApointmentController.getApointments();
     _apointments.forEach((apointment) async {
       ClinicModel clinic = await ClinicController.getClinic(apointment.clinic_id??'');
@@ -87,7 +88,7 @@ class _ApointmentsState extends State<Apointments> {
     return Card(
       elevation: 5,
       child: ListTile(
-        tileColor: apointment?.pet_owner_read_status == 'true' ? text3Color : text7Color,
+        tileColor: apointment?.pet_owner_read_status == 'true' ? text1Color : text7Color,
         style: ListTileStyle.list,
         leading: clinic?.clinic_img != "" ? ImageLoader.loadImageNetwork(clinic?.clinic_img??"",50.0,50.0) : FaIcon(Icons.store,size: 50),
         title: Row(
@@ -128,7 +129,7 @@ class _ApointmentsState extends State<Apointments> {
           elevation: 0,
           centerTitle: true,
           title: Image.asset(logoImg,fit: BoxFit.contain),
-          leading: Container(),
+          // leading: Container(),
           actions: [
             IconButton(
               onPressed: (){
@@ -141,8 +142,11 @@ class _ApointmentsState extends State<Apointments> {
         body: Container(
           height: double.infinity,
           width: double.infinity,
-          child: ListView(
-            children: apointmentList(),
+          child: RefreshIndicator(
+            onRefresh: ()=>initLoadData(),
+            child: ListView(
+              children: apointmentList(),
+            ),
           ),
         ),
       ),
