@@ -1,26 +1,26 @@
-class reviewModel{
-  String? id,user_name,email,comment,rate;
+class RatingReviewModel{
+  String? id,user_id,email,comment,rate,datatime;
 
-  reviewModel(
+  RatingReviewModel(
     this.id,
-    this.user_name,
-    this.email,
+    this.user_id,
     this.comment,
+    this.datatime,
     this.rate
   );
 
-  reviewModel.fromMap(Map<String, dynamic> json):
+  RatingReviewModel.fromMap(Map<String, dynamic> json):
     id = json['id'],
-    user_name = json['user_name'],
-    email = json['email'],
+    user_id = json['user_id'],
+    datatime = json['datatime'],
     comment = json['comment'],
     rate = json['rate']
     ;
 
   Map<String, dynamic> toMap() => {
     "id":id,
-    "user_name":user_name,
-    "email":email,
+    "user_id":user_id,
+    "datatime":datatime,
     "comment":comment,
     "rate":rate
   };

@@ -1,14 +1,17 @@
 // ignore_for_file: prefer_const_constructors
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_chip_tags/flutter_chip_tags.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:banner_carousel/banner_carousel.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smooth_star_rating_null_safety/smooth_star_rating_null_safety.dart';
 import 'package:vetfindapp/Controller/ApointmentController.dart';
+import 'package:vetfindapp/Controller/RatingController.dart';
 import 'package:vetfindapp/Controller/UserController.dart';
 import 'package:vetfindapp/Model/clinicModel.dart';
+import 'package:vetfindapp/Model/reviewModel.dart';
 import 'package:vetfindapp/Model/userModel.dart';
 import 'package:vetfindapp/Pages/_helper/image_loader.dart';
 import 'package:vetfindapp/Pages/clinic/set_appointment.dart';
@@ -29,12 +32,14 @@ class VetClinic extends StatefulWidget {
 class _VetClinicState extends State<VetClinic> {
   List<TextEditingController> text = [];
   int unread_appointment = 0;
+  double clinic_rating = 0.0;
   final _key = GlobalKey<FormState>();
   ClinicModel? clinic;
   UserModel? user;
   final ImagePicker _picker = ImagePicker();
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<String> _services = ['Surgical','Anesthesi','Laboratory','Dietary Counseling']; 
+  List<Map<String,dynamic>> reviewsList = [];
 
   @override
   initState() {
@@ -54,8 +59,22 @@ class _VetClinicState extends State<VetClinic> {
   initLoadData()async {
     final id = await DataStorage.getData('id');
     user = await UserController.getUser(id);
+    reviewsList = [];
+    clinic_rating = await RatingReviewController.getRatingClinic(clinic?.id);
+    List clinic_revews_list = await RatingReviewController.getRatingReviewClinicList(clinic?.id);
+    clinic_revews_list.forEach((clinic_review) async { 
+      RatingReviewModel clinic_rev = clinic_review;
+      UserModel user_review = await UserController.getUser(clinic_rev.user_id??'');
+      setState(() {
+        reviewsList.add({
+          "user": user_review,
+          "review": clinic_rev
+        });
+      });
+    });
     setState(() {
       user = user;
+      clinic_rating = clinic_rating; 
     });
   }
 
@@ -173,8 +192,8 @@ class _VetClinicState extends State<VetClinic> {
         drawerContainerItem(FontAwesomeIcons.objectGroup,'Apointments'),
         drawerContainerItem(FontAwesomeIcons.message,'Messages'),
         drawerContainerItem(Icons.pets,'Pets'),
-        drawerContainerItem(Icons.history,'History'),
-        drawerContainerItem(FontAwesomeIcons.userGear,'Settings'),
+        // drawerContainerItem(Icons.history,'History'),
+        // drawerContainerItem(FontAwesomeIcons.userGear,'Settings'),
         drawerContainerItem(Icons.logout,'Logout'),
       ],
     );
@@ -224,8 +243,8 @@ class _VetClinicState extends State<VetClinic> {
                     starCount: 5,
                     rating: rating,
                     color: text6Color,
-                    onRatingChanged: (rating){
-                      showSetRating();
+                    onRatingChanged: (rating) {
+                      showSetRating().then((value) => initLoadData());
                     },
                   )
                 ],
@@ -297,14 +316,68 @@ class _VetClinicState extends State<VetClinic> {
           padding: EdgeInsets.only(right: 10,bottom: 18),
           child: RichText(
             text: TextSpan(
-              text: "See All",
-              style: TextStyle(color: text7Color,fontSize: 12),
+              text: reviewsList.length.toString(),
+              style: TextStyle(color: text7Color,fontSize: 15),
               recognizer: TapGestureRecognizer()..onTap =() => {}
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget clinicReviewsItem(UserModel? user,RatingReviewModel? review){
+    return ListTile(
+      contentPadding: EdgeInsets.all(5),
+      style: ListTileStyle.list,
+      leading: user?.profile_img != "" ? ImageLoader.loadImageNetwork(user?.profile_img??"",50.0,50.0) : FaIcon(FontAwesomeIcons.user,size: 50),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(user?.fullname??""),
+          Text(DateFormat.yMd().format(DateTime.parse(review?.datatime??""))),
+        ],
+      ),
+      subtitle: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(review?.comment??""),
+          SmoothStarRating(
+            starCount: 5,
+            rating: double.parse(review?.rate??'0.0'),
+            color: text6Color,
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget clinicReviews(){
+    return Column(
+      children: reviewsList.map((_user_review) => clinicReviewsItem(_user_review['user'],_user_review['review'])).toList(),
+    );
+    // return SizedBox(
+    //   height: 100,
+    //   width: double.infinity,
+    //   child: ListTile(
+    //     title: Text('Rating and Reviews'),
+    //     subtitle: SmoothStarRating(
+    //       starCount: 5,
+    //       rating: rating,
+    //       color: text6Color,
+    //     ),
+    //     trailing: Container(
+    //       padding: EdgeInsets.only(right: 10,bottom: 18),
+    //       child: RichText(
+    //         text: TextSpan(
+    //           text: "See All",
+    //           style: TextStyle(color: text7Color,fontSize: 12),
+    //           recognizer: TapGestureRecognizer()..onTap =() => {}
+    //         ),
+    //       ),
+    //     ),
+    //   ),
+    // );
   }
 
   @override
@@ -343,10 +416,11 @@ class _VetClinicState extends State<VetClinic> {
             ),
             SliverList(
               delegate: SliverChildListDelegate([
-                clinicDetails(clinic?.clinic_name,double.parse(clinic?.clinic_rating??"0"),'1.3 Kilometers'),
+                clinicDetails(clinic?.clinic_name,clinic_rating,'1.3 Kilometers'),
                 Divider(),
                 clinicAddress(clinic?.clinic_address),
-                clinicRatingReviews(double.parse(clinic?.clinic_rating??'0.0')),
+                clinicRatingReviews(clinic_rating),
+                clinicReviews(),
                 SizedBox.square(dimension: 80,)
               ]),
             ),

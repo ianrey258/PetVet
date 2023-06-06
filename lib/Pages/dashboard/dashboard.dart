@@ -168,8 +168,8 @@ class _DashboardState extends State<Dashboard> {
         drawerContainerItem(FontAwesomeIcons.objectGroup,'Apointments'),
         drawerContainerItem(FontAwesomeIcons.message,'Messages'),
         drawerContainerItem(Icons.pets,'Pets'),
-        drawerContainerItem(Icons.history,'History'),
-        drawerContainerItem(FontAwesomeIcons.userGear,'Settings'),
+        // drawerContainerItem(Icons.history,'History'),
+        // drawerContainerItem(FontAwesomeIcons.userGear,'Settings'),
         drawerContainerItem(Icons.logout,'Logout'),
       ],
     );
