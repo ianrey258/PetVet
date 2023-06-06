@@ -7,6 +7,7 @@ import 'package:vetfindapp/Controller/RatingController.dart';
 import 'package:vetfindapp/Model/clinicModel.dart';
 import 'package:vetfindapp/Model/reviewModel.dart';
 import 'package:vetfindapp/Pages/_helper/image_loader.dart';
+import 'package:vetfindapp/Services/firebase_messaging.dart';
 import 'package:vetfindapp/Style/library_style_and_constant.dart';
 import 'package:vetfindapp/Utils/SharedPreferences.dart';
 
@@ -53,6 +54,8 @@ class _SetRatingState extends State<SetRating> {
     rating_review?.comment = comment;
     rating_review?.datatime = datatime.toString();
     rating_review?.rate = rating.toString();
+
+    FirebaseMessagingService.sendMessageNotification(notification_type[2], "${await DataStorage.getData('username')} rated you ${rating_review?.rate!.split('.').first} star", 'Rating', rating_review?.comment??'', clinic!.fcm_tokens!,{});
     if (rating_review?.id != null){
       return await RatingReviewController.updateRatingReviewClinic(clinic?.id, rating_review!);
     }
