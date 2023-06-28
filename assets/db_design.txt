@@ -35,6 +35,12 @@ Clinics:
 - services
 - fcm_tokens
 - rating_review:RatingReviews
+- clinic_schedule:ClinicSchedule
+
+ClinicSchedule:
+- clinic_service_day 
+- clinic_close_time
+- clinic_open_time
 
 Apointments:
 - pet_owner_id

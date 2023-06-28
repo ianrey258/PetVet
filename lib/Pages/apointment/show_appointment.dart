@@ -177,6 +177,9 @@ class _ShowAppointmentState extends State<ShowAppointment> {
     if(status == "Declined"){
       return text4Color;
     }
+    if(status == "Completed"){
+      return secondaryColor;
+    }
     return text6Color;
   }
 

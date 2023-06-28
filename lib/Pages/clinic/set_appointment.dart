@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:vetfindapp/Controller/ApointmentController.dart';
+import 'package:vetfindapp/Controller/ClinicController.dart';
 import 'package:vetfindapp/Controller/PetController.dart';
 import 'package:vetfindapp/Model/apointmentModel.dart';
 import 'package:vetfindapp/Model/clinicModel.dart';
@@ -347,7 +348,7 @@ class _SetAppointmentState extends State<SetAppointment> {
                 animationType: AnimationType.fromRight,
               ).show(context); 
             }
-            if(checkConflictSchedule(DateTime.parse(schedule))){
+            if(checkConflictSchedule(DateTime.parse(schedule)) || !await ClinicController.checkClinicSchedule(clinic?.id, apointment!)){
               return CherryToast.error(
                 title: Text('Schedule not available!'),
                 toastPosition: Position.bottom,

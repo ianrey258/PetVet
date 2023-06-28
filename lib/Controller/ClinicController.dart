@@ -1,7 +1,9 @@
 
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:vetfindapp/Model/apointmentModel.dart';
 import 'package:vetfindapp/Model/clinicModel.dart';
 import 'package:vetfindapp/Utils/SharedPreferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -51,6 +53,23 @@ class ClinicController{
       debugPrint("Error on: ${e.toString()}");
       return services;
     }
+  }
+
+  static Future checkClinicSchedule(clinic_id,ClinicApointmentModel data) async {
+    bool available = false;
+
+    final list_schedule = await firestore.collection('clinics').doc(clinic_id).collection('schedule').get();
+    list_schedule.docs.forEach((_data) {
+      ClinicScheduleModel scheduleModel = ClinicScheduleModel.fromMap(jsonDecode(jsonEncode(_data.data()))); 
+      DateTime apointment_datatime = DateTime.parse(data.schedule_datetime??'');
+      DateTime datetime_opening = DateTime.parse('${DateFormat('yyyy-MM-dd').format(apointment_datatime)} ${scheduleModel.clinic_opening??''}');
+      DateTime datetime_closing = DateTime.parse('${DateFormat('yyyy-MM-dd').format(apointment_datatime)} ${scheduleModel.clinic_closing??''}').subtract(const Duration(hours: 1));
+
+      if(!available && datetime_opening.microsecondsSinceEpoch <= apointment_datatime.microsecondsSinceEpoch && apointment_datatime.microsecondsSinceEpoch <= datetime_closing.microsecondsSinceEpoch && DateFormat('EEEE').format(apointment_datatime).contains(scheduleModel.clinic_day??'')){
+        available = !available;
+      }
+    });
+    return available;
   }
 
   static Future<String> fixClinicsMissingData() async {
